@@ -33,6 +33,8 @@ import {
   type PdfSection,
   type PdfChapitre,
 } from "@/lib/pdf-export"
+import { useSession } from "@/lib/auth-client"
+import { canAdd, canEdit, canDelete } from "@/lib/permissions"
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -894,6 +896,7 @@ interface TOCCallbacks {
 function TableOfContents({
   titres, chapitres, sections, articles,
   selectedArticle, onSelectArticle, onClose, callbacks,
+  pCanAdd, pCanEdit, pCanDelete,
 }: {
   titres: Titre[]
   chapitres: Chapitre[]
@@ -903,6 +906,9 @@ function TableOfContents({
   onSelectArticle: (a: Article) => void
   onClose?: () => void
   callbacks: TOCCallbacks
+  pCanAdd: boolean
+  pCanEdit: boolean
+  pCanDelete: boolean
 }) {
   const chapitresOf = (titreId: string) => chapitres.filter((c) => c.titreId === titreId)
   const orphanChapitres = chapitres.filter((c) => !c.titreId)
@@ -926,12 +932,12 @@ function TableOfContents({
               <button onClick={(e) => { e.stopPropagation(); callbacks.onPdfChapitre(ch) }} className="p-1 rounded hover:bg-emerald-500/10 hover:text-emerald-600 opacity-0 group-hover/ch:opacity-100 transition-opacity" title="Télécharger en PDF">
                 <Download className="w-3 h-3" />
               </button>
-              <button onClick={(e) => { e.stopPropagation(); callbacks.onEditChapitre(ch) }} className="p-1 rounded hover:bg-primary/10 hover:text-primary opacity-0 group-hover/ch:opacity-100 transition-opacity">
+              {pCanEdit && <button onClick={(e) => { e.stopPropagation(); callbacks.onEditChapitre(ch) }} className="p-1 rounded hover:bg-primary/10 hover:text-primary opacity-0 group-hover/ch:opacity-100 transition-opacity">
                 <Pencil className="w-3 h-3" />
-              </button>
-              <button onClick={(e) => { e.stopPropagation(); callbacks.onDeleteChapitre(ch) }} className="p-1 rounded hover:bg-destructive/10 hover:text-destructive opacity-0 group-hover/ch:opacity-100 transition-opacity">
+              </button>}
+              {pCanDelete && <button onClick={(e) => { e.stopPropagation(); callbacks.onDeleteChapitre(ch) }} className="p-1 rounded hover:bg-destructive/10 hover:text-destructive opacity-0 group-hover/ch:opacity-100 transition-opacity">
                 <Trash2 className="w-3 h-3" />
-              </button>
+              </button>}
             </div>
           </div>
         </AccordionTrigger>
@@ -951,12 +957,12 @@ function TableOfContents({
                         <button onClick={(e) => { e.stopPropagation(); callbacks.onPdfSection(sec, ch) }} className="p-1 rounded hover:bg-emerald-500/10 hover:text-emerald-600 opacity-0 group-hover/sec:opacity-100 transition-opacity" title="Télécharger en PDF">
                           <Download className="w-3 h-3" />
                         </button>
-                        <button onClick={(e) => { e.stopPropagation(); callbacks.onEditSection(sec) }} className="p-1 rounded hover:bg-primary/10 hover:text-primary opacity-0 group-hover/sec:opacity-100 transition-opacity">
+                        {pCanEdit && <button onClick={(e) => { e.stopPropagation(); callbacks.onEditSection(sec) }} className="p-1 rounded hover:bg-primary/10 hover:text-primary opacity-0 group-hover/sec:opacity-100 transition-opacity">
                           <Pencil className="w-3 h-3" />
-                        </button>
-                        <button onClick={(e) => { e.stopPropagation(); callbacks.onDeleteSection(sec) }} className="p-1 rounded hover:bg-destructive/10 hover:text-destructive opacity-0 group-hover/sec:opacity-100 transition-opacity">
+                        </button>}
+                        {pCanDelete && <button onClick={(e) => { e.stopPropagation(); callbacks.onDeleteSection(sec) }} className="p-1 rounded hover:bg-destructive/10 hover:text-destructive opacity-0 group-hover/sec:opacity-100 transition-opacity">
                           <Trash2 className="w-3 h-3" />
-                        </button>
+                        </button>}
                       </div>
                     </div>
                   </AccordionTrigger>
@@ -975,24 +981,26 @@ function TableOfContents({
                             <span className="font-mono text-[10px] text-muted-foreground mr-1">Art.&nbsp;{art.numero}</span>
                             {art.titre}
                           </button>
-                          <div className="flex gap-0.5 opacity-0 group-hover/art:opacity-100 transition-opacity shrink-0">
-                            <button onClick={() => callbacks.onEditArticle(art)} className="p-1 rounded hover:bg-primary/10 hover:text-primary"><Pencil className="w-3 h-3" /></button>
-                            <button onClick={() => callbacks.onDeleteArticle(art)} className="p-1 rounded hover:bg-destructive/10 hover:text-destructive"><Trash2 className="w-3 h-3" /></button>
-                          </div>
+                          {(pCanEdit || pCanDelete) && (
+                            <div className="flex gap-0.5 opacity-0 group-hover/art:opacity-100 transition-opacity shrink-0">
+                              {pCanEdit && <button onClick={() => callbacks.onEditArticle(art)} className="p-1 rounded hover:bg-primary/10 hover:text-primary"><Pencil className="w-3 h-3" /></button>}
+                              {pCanDelete && <button onClick={() => callbacks.onDeleteArticle(art)} className="p-1 rounded hover:bg-destructive/10 hover:text-destructive"><Trash2 className="w-3 h-3" /></button>}
+                            </div>
+                          )}
                         </div>
                       ))}
-                      <button onClick={() => callbacks.onAddArticle(sec.id, sec.chapitreId)} className="w-full text-left text-[11px] px-2 py-1 rounded text-muted-foreground hover:text-primary hover:bg-primary/5 flex items-center gap-1 transition-colors">
+                      {pCanAdd && <button onClick={() => callbacks.onAddArticle(sec.id, sec.chapitreId)} className="w-full text-left text-[11px] px-2 py-1 rounded text-muted-foreground hover:text-primary hover:bg-primary/5 flex items-center gap-1 transition-colors">
                         <Plus className="w-3 h-3" /> Ajouter un article
-                      </button>
+                      </button>}
                     </div>
                   </AccordionContent>
                 </AccordionItem>
               )
             })}
           </Accordion>
-          <button onClick={() => callbacks.onAddSection(ch.id)} className="w-full text-left text-[11px] px-3 py-2 border-t border-border/30 text-muted-foreground hover:text-primary hover:bg-muted/40 flex items-center gap-1 transition-colors">
+          {pCanAdd && <button onClick={() => callbacks.onAddSection(ch.id)} className="w-full text-left text-[11px] px-3 py-2 border-t border-border/30 text-muted-foreground hover:text-primary hover:bg-muted/40 flex items-center gap-1 transition-colors">
             <Plus className="w-3 h-3" /> Ajouter une section
-          </button>
+          </button>}
         </AccordionContent>
       </AccordionItem>
     )
@@ -1010,12 +1018,12 @@ function TableOfContents({
                 <span className="flex-1 text-[11px] font-semibold uppercase tracking-wide leading-tight line-clamp-2">{t.titre}</span>
                 <div className="flex items-center gap-0.5 shrink-0 ml-1">
                   <Badge variant="secondary" className="text-[10px] px-1.5 py-0 h-4">{chapitresOf(t.id).length} chap.</Badge>
-                  <button onClick={(e) => { e.stopPropagation(); callbacks.onEditTitre(t) }} className="p-1 rounded hover:bg-primary/10 hover:text-primary opacity-0 group-hover/ti:opacity-100 transition-opacity">
+                  {pCanEdit && <button onClick={(e) => { e.stopPropagation(); callbacks.onEditTitre(t) }} className="p-1 rounded hover:bg-primary/10 hover:text-primary opacity-0 group-hover/ti:opacity-100 transition-opacity">
                     <Pencil className="w-3 h-3" />
-                  </button>
-                  <button onClick={(e) => { e.stopPropagation(); callbacks.onDeleteTitre(t) }} className="p-1 rounded hover:bg-destructive/10 hover:text-destructive opacity-0 group-hover/ti:opacity-100 transition-opacity">
+                  </button>}
+                  {pCanDelete && <button onClick={(e) => { e.stopPropagation(); callbacks.onDeleteTitre(t) }} className="p-1 rounded hover:bg-destructive/10 hover:text-destructive opacity-0 group-hover/ti:opacity-100 transition-opacity">
                     <Trash2 className="w-3 h-3" />
-                  </button>
+                  </button>}
                 </div>
               </div>
             </AccordionTrigger>
@@ -1024,9 +1032,9 @@ function TableOfContents({
                 <Accordion type="multiple" className="w-full space-y-1">
                   {chapitresOf(t.id).map((ch) => renderChapitre(ch))}
                 </Accordion>
-                <button onClick={() => callbacks.onAddChapitre(t.id)} className="w-full text-left text-[11px] px-3 py-2 rounded text-muted-foreground hover:text-primary hover:bg-muted/40 flex items-center gap-1 transition-colors border-t border-border/30 mt-1">
+                {pCanAdd && <button onClick={() => callbacks.onAddChapitre(t.id)} className="w-full text-left text-[11px] px-3 py-2 rounded text-muted-foreground hover:text-primary hover:bg-muted/40 flex items-center gap-1 transition-colors border-t border-border/30 mt-1">
                   <Plus className="w-3 h-3" /> Ajouter un chapitre
-                </button>
+                </button>}
               </div>
             </AccordionContent>
           </AccordionItem>
@@ -1043,12 +1051,12 @@ function TableOfContents({
       )}
 
       {/* Ajouter un titre */}
-      <button
+      {pCanAdd && <button
         onClick={callbacks.onAddTitre}
         className="w-full text-left text-[11px] px-3 py-2.5 mt-1 rounded-md border border-dashed border-primary/30 text-muted-foreground hover:text-primary hover:border-primary/50 hover:bg-primary/5 flex items-center gap-1.5 transition-colors"
       >
         <Plus className="w-3.5 h-3.5" /> Ajouter un titre
-      </button>
+      </button>}
     </div>
   )
 }
@@ -1056,13 +1064,14 @@ function TableOfContents({
 // ─── Vue article ──────────────────────────────────────────────────────────────
 
 function ArticleView({
-  article, section, chapitre, onBack, onEdit,
+  article, section, chapitre, onBack, onEdit, pCanEdit,
 }: {
   article: Article
   section?: Section
   chapitre?: Chapitre
   onBack: () => void
   onEdit: () => void
+  pCanEdit: boolean
 }) {
   function handleDownload() {
     const pdfArt: PdfArticle = {
@@ -1101,9 +1110,9 @@ function ArticleView({
             <Button variant="outline" size="sm" onClick={handleDownload} className="h-7 text-xs gap-1 text-emerald-700 border-emerald-300 hover:bg-emerald-50 dark:text-emerald-400 dark:border-emerald-800 dark:hover:bg-emerald-950/40">
               <Download className="w-3 h-3" /> PDF
             </Button>
-            <Button variant="outline" size="sm" onClick={onEdit} className="shrink-0 h-7 text-xs gap-1">
+            {pCanEdit && <Button variant="outline" size="sm" onClick={onEdit} className="shrink-0 h-7 text-xs gap-1">
               <Pencil className="w-3 h-3" /> Modifier
-            </Button>
+            </Button>}
           </div>
         </div>
 
@@ -1173,6 +1182,12 @@ function ArticleView({
 // ─── Composant principal ──────────────────────────────────────────────────────
 
 export function CodeBrowser() {
+  const { data: session } = useSession()
+  const role = (session?.user as { role?: string } | undefined)?.role
+  const pCanAdd    = canAdd(role)
+  const pCanEdit   = canEdit(role)
+  const pCanDelete = canDelete(role)
+
   const [titres,    setTitres]    = useState<Titre[]>(initialTitres)
   const [chapitres, setChapitres] = useState<Chapitre[]>(initialChapitres)
   const [sections,  setSections]  = useState<Section[]>(initialSections)
@@ -1341,6 +1356,7 @@ export function CodeBrowser() {
               titres={titres} chapitres={chapitres} sections={sections} articles={articles}
               selectedArticle={selectedArticle} onSelectArticle={setSelectedArticle}
               callbacks={tocCallbacks}
+              pCanAdd={pCanAdd} pCanEdit={pCanEdit} pCanDelete={pCanDelete}
             />
           </CardContent>
         </Card>
@@ -1368,6 +1384,7 @@ export function CodeBrowser() {
                       titres={titres} chapitres={chapitres} sections={sections} articles={articles}
                       selectedArticle={selectedArticle} onSelectArticle={setSelectedArticle}
                       onClose={() => setMobileNavOpen(false)} callbacks={tocCallbacks}
+                      pCanAdd={pCanAdd} pCanEdit={pCanEdit} pCanDelete={pCanDelete}
                     />
                   </div>
                 </SheetContent>
@@ -1386,9 +1403,9 @@ export function CodeBrowser() {
                   className="pl-9 bg-background"
                 />
               </div>
-              <Button size="sm" className="shrink-0 gap-1" onClick={() => setArticleDialog({ open: true })}>
+              {pCanAdd && <Button size="sm" className="shrink-0 gap-1" onClick={() => setArticleDialog({ open: true })}>
                 <Plus className="w-4 h-4" /> Article
-              </Button>
+              </Button>}
             </div>
           </CardHeader>
 
@@ -1400,6 +1417,7 @@ export function CodeBrowser() {
                 chapitre={findChapitre(selectedArticle.chapitreId)}
                 onBack={() => setSelectedArticle(null)}
                 onEdit={() => setArticleDialog({ open: true, editing: selectedArticle })}
+                pCanEdit={pCanEdit}
               />
             ) : (
               <div className="space-y-2">
@@ -1459,18 +1477,18 @@ export function CodeBrowser() {
                         >
                           <Download className="w-3.5 h-3.5" />
                         </Button>
-                        <Button
+                        {pCanEdit && <Button
                           variant="secondary" size="icon" className="h-7 w-7"
                           onClick={(e) => { e.stopPropagation(); setArticleDialog({ open: true, editing: art }) }}
                         >
                           <Pencil className="w-3.5 h-3.5" />
-                        </Button>
-                        <Button
+                        </Button>}
+                        {pCanDelete && <Button
                           variant="destructive" size="icon" className="h-7 w-7"
                           onClick={(e) => { e.stopPropagation(); setDeleteConfirm({ open: true, type: "article", id: art.id, label: `Article ${art.numero}` }) }}
                         >
                           <Trash2 className="w-3.5 h-3.5" />
-                        </Button>
+                        </Button>}
                       </div>
                     </div>
                   )

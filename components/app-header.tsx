@@ -1,5 +1,6 @@
 "use client"
 
+import { useRouter } from "next/navigation"
 import { Bell, Search, User } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -12,7 +13,10 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
+import { Badge } from "@/components/ui/badge"
 import { MobileNav } from "@/components/mobile-nav"
+import { useSession, signOut } from "@/lib/auth-client"
+import { getRoleLabel, getRoleColor } from "@/lib/permissions"
 
 interface AppHeaderProps {
   title: string
@@ -20,6 +24,21 @@ interface AppHeaderProps {
 }
 
 export function AppHeader({ title, subtitle }: AppHeaderProps) {
+  const router = useRouter()
+  const { data: session } = useSession()
+
+  const user     = session?.user
+  const role     = (user as { role?: string } | undefined)?.role
+  const initials = user?.name
+    ? user.name.split(" ").map((n) => n[0]).join("").slice(0, 2).toUpperCase()
+    : "??"
+
+  async function handleSignOut() {
+    await signOut()
+    router.push("/login")
+    router.refresh()
+  }
+
   return (
     <header className="flex items-center justify-between h-14 sm:h-16 px-3 sm:px-6 border-b border-border bg-card">
       <div className="flex items-center gap-3">
@@ -33,7 +52,7 @@ export function AppHeader({ title, subtitle }: AppHeaderProps) {
       </div>
 
       <div className="flex items-center gap-2 sm:gap-4">
-        {/* Search - Hidden on mobile, visible on tablet+ */}
+        {/* Search - desktop */}
         <div className="relative hidden md:block">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
           <Input
@@ -43,7 +62,7 @@ export function AppHeader({ title, subtitle }: AppHeaderProps) {
           />
         </div>
 
-        {/* Mobile Search Button */}
+        {/* Search - mobile */}
         <Button variant="ghost" size="icon" className="md:hidden">
           <Search className="w-5 h-5" />
         </Button>
@@ -54,22 +73,33 @@ export function AppHeader({ title, subtitle }: AppHeaderProps) {
           <span className="absolute top-1 right-1 w-2 h-2 bg-primary rounded-full" />
         </Button>
 
-        {/* User Menu */}
+        {/* User menu */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" className="flex items-center gap-2 px-2 sm:px-3">
               <Avatar className="w-7 h-7 sm:w-8 sm:h-8">
                 <AvatarFallback className="bg-primary text-primary-foreground text-xs">
-                  AG
+                  {initials}
                 </AvatarFallback>
               </Avatar>
-              <span className="hidden sm:block text-sm font-medium">
-                Agent Minier
-              </span>
+              <div className="hidden sm:flex flex-col items-start gap-0.5">
+                <span className="text-sm font-medium leading-none">{user?.name ?? "…"}</span>
+                <Badge
+                  variant="outline"
+                  className={`text-[10px] px-1.5 py-0 h-4 font-normal ${getRoleColor(role)}`}
+                >
+                  {getRoleLabel(role)}
+                </Badge>
+              </div>
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-48">
-            <DropdownMenuLabel>Mon compte</DropdownMenuLabel>
+          <DropdownMenuContent align="end" className="w-52">
+            <DropdownMenuLabel>
+              <div className="space-y-0.5">
+                <p className="font-medium">{user?.name ?? "…"}</p>
+                <p className="text-xs text-muted-foreground font-normal">{user?.email}</p>
+              </div>
+            </DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuItem>
               <User className="w-4 h-4 mr-2" />
@@ -77,7 +107,7 @@ export function AppHeader({ title, subtitle }: AppHeaderProps) {
             </DropdownMenuItem>
             <DropdownMenuItem>Paramètres</DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem className="text-destructive">
+            <DropdownMenuItem className="text-destructive" onClick={handleSignOut}>
               Déconnexion
             </DropdownMenuItem>
           </DropdownMenuContent>

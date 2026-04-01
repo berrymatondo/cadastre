@@ -4,6 +4,7 @@ import { StatsCards } from "@/components/stats-cards"
 import { RecentActivity } from "@/components/recent-activity"
 import { QuickActions } from "@/components/quick-actions"
 import { ProjectTimeline } from "@/components/project-timeline"
+import { DigitalTransitionBanner } from "@/components/digital-transition-banner"
 
 export default function DashboardPage() {
   return (
@@ -16,6 +17,9 @@ export default function DashboardPage() {
         />
         <main className="flex-1 overflow-y-auto p-3 sm:p-4 lg:p-6">
           <div className="max-w-7xl mx-auto space-y-4 sm:space-y-6">
+            {/* Transition papier → digital */}
+            <DigitalTransitionBanner />
+
             {/* Stats */}
             <StatsCards />
 

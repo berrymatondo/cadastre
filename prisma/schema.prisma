@@ -1,0 +1,209 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ============================================================
+// CODE MINIER
+// Structure: Chapitre → Section → Article → Paragraphe
+// ============================================================
+
+model CodeMinierChapitre {
+  id        String   @id @default(cuid())
+  numero    String
+  titre     String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  sections  CodeMinierSection[]
+  articles  CodeMinierArticle[]
+
+  @@map("code_minier_chapitres")
+}
+
+model CodeMinierSection {
+  id         String   @id @default(cuid())
+  numero     String
+  titre      String
+  chapitreId String
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  chapitre CodeMinierChapitre  @relation(fields: [chapitreId], references: [id], onDelete: Cascade)
+  articles CodeMinierArticle[]
+
+  @@map("code_minier_sections")
+}
+
+model CodeMinierArticle {
+  id           String   @id @default(cuid())
+  numero       String
+  titre        String
+  chapitreId   String
+  sectionId    String?
+  modification String?
+  introduction String?
+  contenu      String?
+  keywords     String[]
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  chapitre    CodeMinierChapitre   @relation(fields: [chapitreId], references: [id], onDelete: Cascade)
+  section     CodeMinierSection?   @relation(fields: [sectionId], references: [id], onDelete: SetNull)
+  paragraphes CodeMinierParagraphe[]
+
+  @@map("code_minier_articles")
+}
+
+model CodeMinierParagraphe {
+  id        String   @id @default(cuid())
+  numero    String
+  contenu   String
+  note      String?
+  articleId String
+  ordre     Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  article CodeMinierArticle @relation(fields: [articleId], references: [id], onDelete: Cascade)
+
+  @@map("code_minier_paragraphes")
+}
+
+// ============================================================
+// RÈGLEMENT MINIER
+// Structure: Titre → Chapitre → Article → Paragraphe
+// ============================================================
+
+model ReglementTitre {
+  id        String   @id @default(cuid())
+  numero    String
+  titre     String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  chapitres ReglementChapitre[]
+  articles  ReglementArticle[]
+
+  @@map("reglement_titres")
+}
+
+model ReglementChapitre {
+  id        String   @id @default(cuid())
+  numero    String
+  titre     String
+  titreId   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  titre_rel ReglementTitre     @relation(fields: [titreId], references: [id], onDelete: Cascade)
+  articles  ReglementArticle[]
+
+  @@map("reglement_chapitres")
+}
+
+model ReglementArticle {
+  id         String   @id @default(cuid())
+  numero     String
+  titre      String
+  chapitreId String
+  titreId    String
+  keywords   String[]
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  chapitre    ReglementChapitre     @relation(fields: [chapitreId], references: [id], onDelete: Cascade)
+  titre_rel   ReglementTitre        @relation(fields: [titreId], references: [id], onDelete: Cascade)
+  paragraphes ReglementParagraphe[]
+
+  @@map("reglement_articles")
+}
+
+model ReglementParagraphe {
+  id        String   @id @default(cuid())
+  numero    String
+  contenu   String
+  note      String?
+  articleId String
+  ordre     Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  article ReglementArticle @relation(fields: [articleId], references: [id], onDelete: Cascade)
+
+  @@map("reglement_paragraphes")
+}
+
+// ============================================================
+// CONFLITS MINIERS
+// ============================================================
+
+enum ConflitStatut {
+  en_cours
+  resolu
+  appel
+}
+
+model Conflit {
+  id            String        @id @default(cuid())
+  reference     String        @unique
+  type          String
+  parties       String
+  zone          String
+  dateOuverture DateTime
+  statut        ConflitStatut @default(en_cours)
+  decision      String?
+  description   String?
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  @@map("conflits")
+}
+
+// ============================================================
+// JURISPRUDENCE
+// ============================================================
+
+enum JurisprudenceImportance {
+  haute
+  moyenne
+  normale
+}
+
+model Jurisprudence {
+  id          String                  @id @default(cuid())
+  reference   String                  @unique
+  titre       String
+  juridiction String
+  date        DateTime
+  resume      String
+  importance  JurisprudenceImportance @default(normale)
+  texteComplet String?
+  matieres    String[]
+  createdAt   DateTime                @default(now())
+  updatedAt   DateTime                @updatedAt
+
+  @@map("jurisprudences")
+}
+
+// ============================================================
+// JOURNAL OFFICIEL
+// ============================================================
+
+model JournalOfficiel {
+  id        String   @id @default(cuid())
+  numero    String   @unique
+  date      DateTime
+  titre     String
+  categorie String
+  resume    String
+  pageDebut Int
+  pageFin   Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("journal_officiel")
+}

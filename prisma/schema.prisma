@@ -8,16 +8,30 @@ datasource db {
 
 // ============================================================
 // CODE MINIER
-// Structure: Chapitre → Section → Article → Paragraphe
+// Structure: Titre → Chapitre → Section → Article → Paragraphe
 // ============================================================
 
-model CodeMinierChapitre {
+model CodeMinierTitre {
   id        String   @id @default(cuid())
   numero    String
   titre     String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  chapitres CodeMinierChapitre[]
+
+  @@map("code_minier_titres")
+}
+
+model CodeMinierChapitre {
+  id        String   @id @default(cuid())
+  numero    String
+  titre     String
+  titreId   String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  titre_rel CodeMinierTitre?    @relation(fields: [titreId], references: [id], onDelete: SetNull)
   sections  CodeMinierSection[]
   articles  CodeMinierArticle[]
 

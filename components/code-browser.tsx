@@ -63,27 +63,41 @@ interface Section {
   chapitreId: string
 }
 
+interface Titre {
+  id: string
+  numero: string
+  titre: string
+}
+
 interface Chapitre {
   id: string
   numero: string
   titre: string
+  titreId?: string
 }
 
 type ArticleSaveData = Omit<Article, "id">
 
 // ─── Données initiales ────────────────────────────────────────────────────────
 
+const initialTitres: Titre[] = [
+  { id: "t1",  numero: "I",    titre: "DISPOSITIONS GÉNÉRALES" },
+  { id: "t2",  numero: "II",   titre: "DE L'ADMINISTRATION MINIÈRE ET DU CADASTRE MINIER" },
+  { id: "t3",  numero: "III",  titre: "DES DROITS MINIERS ET DES AUTORISATIONS DE CARRIÈRES" },
+  { id: "t4",  numero: "IV",   titre: "DES RÉGIMES FISCAL ET DOUANIER" },
+  { id: "t16", numero: "XVI",  titre: "DES DISPOSITIONS TRANSITOIRES" },
+  { id: "t17", numero: "XVII", titre: "DES DISPOSITIONS ABROGATOIRES ET FINALES" },
+]
+
 const initialChapitres: Chapitre[] = [
-  { id: "ch1", numero: "Ier",  titre: "DES DÉFINITIONS DES TERMES, DU CHAMP D'APPLICATION ET DES PRINCIPES FONDAMENTAUX" },
-  { id: "ch2", numero: "II",   titre: "DU CADASTRE MINIER" },
-  { id: "ch3", numero: "III",  titre: "DES DROITS MINIERS ET DES AUTORISATIONS DE CARRIÈRES" },
-  { id: "ch4", numero: "IV",   titre: "DES PERMIS D'EXPLOITATION" },
-  { id: "ch5",   numero: "V",    titre: "DISPOSITIONS FISCALES ET DOUANIÈRES" },
-  // ── Dispositions transitoires (Titre XVI) ───────────────────────────────
-  { id: "ch_p3",  numero: "III",  titre: "DES PARTENARIATS AVEC L'ÉTAT" },
-  { id: "ch_p4",  numero: "IV",   titre: "DE LA MISE EN APPLICATION DE NOUVELLES DISPOSITIONS" },
-  // ── Dispositions abrogatoires et finales (Titre XVII) ───────────────────
-  { id: "ch_p17", numero: "XVII", titre: "DES DISPOSITIONS ABROGATOIRES ET FINALES" },
+  { id: "ch1",    numero: "Ier",  titre: "DES DÉFINITIONS DES TERMES, DU CHAMP D'APPLICATION ET DES PRINCIPES FONDAMENTAUX", titreId: "t1" },
+  { id: "ch2",    numero: "II",   titre: "DU CADASTRE MINIER",                                                                titreId: "t2" },
+  { id: "ch3",    numero: "III",  titre: "DES DROITS MINIERS ET DES AUTORISATIONS DE CARRIÈRES",                              titreId: "t3" },
+  { id: "ch4",    numero: "IV",   titre: "DES PERMIS D'EXPLOITATION",                                                        titreId: "t3" },
+  { id: "ch5",    numero: "V",    titre: "DISPOSITIONS FISCALES ET DOUANIÈRES",                                               titreId: "t4" },
+  { id: "ch_p3",  numero: "III",  titre: "DES PARTENARIATS AVEC L'ÉTAT",                                                     titreId: "t16" },
+  { id: "ch_p4",  numero: "IV",   titre: "DE LA MISE EN APPLICATION DE NOUVELLES DISPOSITIONS",                              titreId: "t16" },
+  { id: "ch_p17", numero: "XVII", titre: "DES DISPOSITIONS ABROGATOIRES ET FINALES",                                         titreId: "t17" },
 ]
 
 const initialSections: Section[] = [
@@ -425,15 +439,15 @@ const initialArticles: Article[] = [
   },
 ]
 
-// ─── Dialog : Chapitre ────────────────────────────────────────────────────────
+// ─── Dialog : Titre ───────────────────────────────────────────────────────────
 
-function ChapterFormDialog({
+function TitreFormDialog({
   open, onClose, initial, onSave,
 }: {
   open: boolean
   onClose: () => void
-  initial?: Chapitre
-  onSave: (data: Pick<Chapitre, "numero" | "titre">) => void
+  initial?: Titre
+  onSave: (data: Pick<Titre, "numero" | "titre">) => void
 }) {
   const [numero, setNumero] = useState("")
   const [titre, setTitre] = useState("")
@@ -452,9 +466,79 @@ function ChapterFormDialog({
     <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
+          <DialogTitle>{initial ? "Modifier le titre" : "Ajouter un titre"}</DialogTitle>
+        </DialogHeader>
+        <div className="space-y-4 py-2">
+          <div className="space-y-1.5">
+            <Label htmlFor="ti-num">Numéro</Label>
+            <Input id="ti-num" placeholder="ex. I, II, XVI…" value={numero} onChange={(e) => setNumero(e.target.value)} />
+          </div>
+          <div className="space-y-1.5">
+            <Label htmlFor="ti-titre">Intitulé du titre</Label>
+            <Textarea id="ti-titre" placeholder="DISPOSITIONS GÉNÉRALES…" value={titre} onChange={(e) => setTitre(e.target.value)} rows={3} />
+          </div>
+        </div>
+        <DialogFooter>
+          <Button variant="outline" onClick={onClose}>Annuler</Button>
+          <Button onClick={save} disabled={!numero.trim() || !titre.trim()}>{initial ? "Enregistrer" : "Créer"}</Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  )
+}
+
+// ─── Dialog : Chapitre ────────────────────────────────────────────────────────
+
+function ChapterFormDialog({
+  open, onClose, initial, titres, defaultTitreId, onSave,
+}: {
+  open: boolean
+  onClose: () => void
+  initial?: Chapitre
+  titres: Titre[]
+  defaultTitreId?: string
+  onSave: (data: Pick<Chapitre, "numero" | "titre" | "titreId">) => void
+}) {
+  const [numero, setNumero] = useState("")
+  const [titre, setTitre] = useState("")
+  const [titreId, setTitreId] = useState("")
+
+  useEffect(() => {
+    if (open) {
+      setNumero(initial?.numero ?? "")
+      setTitre(initial?.titre ?? "")
+      setTitreId(initial?.titreId ?? defaultTitreId ?? titres[0]?.id ?? "")
+    }
+  }, [open, initial, defaultTitreId, titres])
+
+  function save() {
+    if (!numero.trim() || !titre.trim()) return
+    onSave({ numero: numero.trim(), titre: titre.trim(), titreId: titreId || undefined })
+    onClose()
+  }
+
+  return (
+    <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
           <DialogTitle>{initial ? "Modifier le chapitre" : "Ajouter un chapitre"}</DialogTitle>
         </DialogHeader>
         <div className="space-y-4 py-2">
+          {titres.length > 0 && (
+            <div className="space-y-1.5">
+              <Label>Titre parent</Label>
+              <select
+                className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                value={titreId}
+                onChange={(e) => setTitreId(e.target.value)}
+              >
+                <option value="">— Aucun titre —</option>
+                {titres.map((t) => (
+                  <option key={t.id} value={t.id}>Titre {t.numero} — {t.titre}</option>
+                ))}
+              </select>
+            </div>
+          )}
           <div className="space-y-1.5">
             <Label htmlFor="ch-num">Numéro</Label>
             <Input id="ch-num" placeholder="ex. Ier, II, III…" value={numero} onChange={(e) => setNumero(e.target.value)} />
@@ -789,7 +873,10 @@ function DeleteConfirmDialog({
 // ─── Callbacks passés au sommaire ─────────────────────────────────────────────
 
 interface TOCCallbacks {
-  onAddChapitre: () => void
+  onAddTitre: () => void
+  onEditTitre: (t: Titre) => void
+  onDeleteTitre: (t: Titre) => void
+  onAddChapitre: (titreId?: string) => void
   onEditChapitre: (ch: Chapitre) => void
   onDeleteChapitre: (ch: Chapitre) => void
   onPdfChapitre: (ch: Chapitre) => void
@@ -805,9 +892,10 @@ interface TOCCallbacks {
 // ─── Sommaire ─────────────────────────────────────────────────────────────────
 
 function TableOfContents({
-  chapitres, sections, articles,
+  titres, chapitres, sections, articles,
   selectedArticle, onSelectArticle, onClose, callbacks,
 }: {
+  titres: Titre[]
   chapitres: Chapitre[]
   sections: Section[]
   articles: Article[]
@@ -816,150 +904,150 @@ function TableOfContents({
   onClose?: () => void
   callbacks: TOCCallbacks
 }) {
+  const chapitresOf = (titreId: string) => chapitres.filter((c) => c.titreId === titreId)
+  const orphanChapitres = chapitres.filter((c) => !c.titreId)
   const sectionsOf = (chapitreId: string) => sections.filter((s) => s.chapitreId === chapitreId)
   const articlesOf = (sectionId: string) => articles.filter((a) => a.sectionId === sectionId)
   const artCount   = (chapitreId: string) => articles.filter((a) => a.chapitreId === chapitreId).length
 
+  function renderChapitre(ch: Chapitre) {
+    return (
+      <AccordionItem
+        key={ch.id}
+        value={`ch-${ch.id}`}
+        className="border border-border/50 rounded-md overflow-hidden"
+      >
+        <AccordionTrigger className="hover:no-underline px-3 py-2.5 bg-muted/40 hover:bg-muted/70 [&>svg]:shrink-0 [&>svg]:ml-1">
+          <div className="flex items-start gap-2 w-full text-left group/ch">
+            <span className="text-[11px] font-bold text-primary/80 shrink-0 mt-0.5 uppercase">Chap.&nbsp;{ch.numero}</span>
+            <span className="flex-1 text-[11px] font-semibold uppercase tracking-wide leading-tight line-clamp-2">{ch.titre}</span>
+            <div className="flex items-center gap-0.5 shrink-0 ml-1">
+              <Badge variant="secondary" className="text-[10px] px-1.5 py-0 h-4">{artCount(ch.id)}</Badge>
+              <button onClick={(e) => { e.stopPropagation(); callbacks.onPdfChapitre(ch) }} className="p-1 rounded hover:bg-emerald-500/10 hover:text-emerald-600 opacity-0 group-hover/ch:opacity-100 transition-opacity" title="Télécharger en PDF">
+                <Download className="w-3 h-3" />
+              </button>
+              <button onClick={(e) => { e.stopPropagation(); callbacks.onEditChapitre(ch) }} className="p-1 rounded hover:bg-primary/10 hover:text-primary opacity-0 group-hover/ch:opacity-100 transition-opacity">
+                <Pencil className="w-3 h-3" />
+              </button>
+              <button onClick={(e) => { e.stopPropagation(); callbacks.onDeleteChapitre(ch) }} className="p-1 rounded hover:bg-destructive/10 hover:text-destructive opacity-0 group-hover/ch:opacity-100 transition-opacity">
+                <Trash2 className="w-3 h-3" />
+              </button>
+            </div>
+          </div>
+        </AccordionTrigger>
+
+        <AccordionContent className="px-0 pb-0">
+          <Accordion type="multiple" className="w-full">
+            {sectionsOf(ch.id).map((sec) => {
+              const secArts = articlesOf(sec.id)
+              return (
+                <AccordionItem key={sec.id} value={`sec-${sec.id}`} className="border-0 border-t border-border/30">
+                  <AccordionTrigger className="hover:no-underline px-3 py-2 hover:bg-muted/40 [&>svg]:shrink-0 [&>svg]:ml-1">
+                    <div className="flex items-start gap-2 w-full text-left group/sec">
+                      <span className="text-[10px] text-muted-foreground shrink-0 mt-0.5">§&nbsp;{sec.numero}</span>
+                      <span className="flex-1 text-xs font-medium italic leading-tight line-clamp-2">{sec.titre}</span>
+                      <div className="flex items-center gap-0.5 shrink-0 ml-1">
+                        <Badge variant="outline" className="text-[10px] px-1 py-0 h-4">{secArts.length}</Badge>
+                        <button onClick={(e) => { e.stopPropagation(); callbacks.onPdfSection(sec, ch) }} className="p-1 rounded hover:bg-emerald-500/10 hover:text-emerald-600 opacity-0 group-hover/sec:opacity-100 transition-opacity" title="Télécharger en PDF">
+                          <Download className="w-3 h-3" />
+                        </button>
+                        <button onClick={(e) => { e.stopPropagation(); callbacks.onEditSection(sec) }} className="p-1 rounded hover:bg-primary/10 hover:text-primary opacity-0 group-hover/sec:opacity-100 transition-opacity">
+                          <Pencil className="w-3 h-3" />
+                        </button>
+                        <button onClick={(e) => { e.stopPropagation(); callbacks.onDeleteSection(sec) }} className="p-1 rounded hover:bg-destructive/10 hover:text-destructive opacity-0 group-hover/sec:opacity-100 transition-opacity">
+                          <Trash2 className="w-3 h-3" />
+                        </button>
+                      </div>
+                    </div>
+                  </AccordionTrigger>
+                  <AccordionContent className="pb-1">
+                    <div className="pl-4 pr-2 space-y-0.5">
+                      {secArts.map((art) => (
+                        <div key={art.id} className="group/art flex items-center gap-1">
+                          <button
+                            onClick={() => { onSelectArticle(art); onClose?.() }}
+                            className={cn(
+                              "flex-1 text-left text-xs px-2 py-1.5 rounded transition-colors",
+                              "hover:bg-primary/10 hover:text-primary",
+                              selectedArticle?.id === art.id ? "bg-primary/15 text-primary font-medium" : "text-foreground/80"
+                            )}
+                          >
+                            <span className="font-mono text-[10px] text-muted-foreground mr-1">Art.&nbsp;{art.numero}</span>
+                            {art.titre}
+                          </button>
+                          <div className="flex gap-0.5 opacity-0 group-hover/art:opacity-100 transition-opacity shrink-0">
+                            <button onClick={() => callbacks.onEditArticle(art)} className="p-1 rounded hover:bg-primary/10 hover:text-primary"><Pencil className="w-3 h-3" /></button>
+                            <button onClick={() => callbacks.onDeleteArticle(art)} className="p-1 rounded hover:bg-destructive/10 hover:text-destructive"><Trash2 className="w-3 h-3" /></button>
+                          </div>
+                        </div>
+                      ))}
+                      <button onClick={() => callbacks.onAddArticle(sec.id, sec.chapitreId)} className="w-full text-left text-[11px] px-2 py-1 rounded text-muted-foreground hover:text-primary hover:bg-primary/5 flex items-center gap-1 transition-colors">
+                        <Plus className="w-3 h-3" /> Ajouter un article
+                      </button>
+                    </div>
+                  </AccordionContent>
+                </AccordionItem>
+              )
+            })}
+          </Accordion>
+          <button onClick={() => callbacks.onAddSection(ch.id)} className="w-full text-left text-[11px] px-3 py-2 border-t border-border/30 text-muted-foreground hover:text-primary hover:bg-muted/40 flex items-center gap-1 transition-colors">
+            <Plus className="w-3 h-3" /> Ajouter une section
+          </button>
+        </AccordionContent>
+      </AccordionItem>
+    )
+  }
+
   return (
     <div className="space-y-1">
+      {/* Titres avec leurs chapitres */}
       <Accordion type="multiple" className="w-full space-y-1">
-        {chapitres.map((ch, chIdx) => (
-          <AccordionItem
-            key={ch.id}
-            value={`ch-${chIdx}`}
-            className="border border-border/50 rounded-md overflow-hidden"
-          >
-            {/* Chapitre trigger */}
-            <AccordionTrigger className="hover:no-underline px-3 py-2.5 bg-muted/40 hover:bg-muted/70 [&>svg]:shrink-0 [&>svg]:ml-1">
-              <div className="flex items-start gap-2 w-full text-left group/ch">
-                <span className="text-[11px] font-bold text-primary/80 shrink-0 mt-0.5 uppercase">Chap.&nbsp;{ch.numero}</span>
-                <span className="flex-1 text-[11px] font-semibold uppercase tracking-wide leading-tight line-clamp-2">{ch.titre}</span>
+        {titres.map((t) => (
+          <AccordionItem key={t.id} value={`t-${t.id}`} className="border border-primary/30 rounded-md overflow-hidden">
+            <AccordionTrigger className="hover:no-underline px-3 py-2.5 bg-primary/5 hover:bg-primary/10 [&>svg]:shrink-0 [&>svg]:ml-1">
+              <div className="flex items-start gap-2 w-full text-left group/ti">
+                <span className="text-[11px] font-bold text-primary shrink-0 mt-0.5 uppercase">Titre&nbsp;{t.numero}</span>
+                <span className="flex-1 text-[11px] font-semibold uppercase tracking-wide leading-tight line-clamp-2">{t.titre}</span>
                 <div className="flex items-center gap-0.5 shrink-0 ml-1">
-                  <Badge variant="secondary" className="text-[10px] px-1.5 py-0 h-4">{artCount(ch.id)}</Badge>
-                  <button
-                    onClick={(e) => { e.stopPropagation(); callbacks.onPdfChapitre(ch) }}
-                    className="p-1 rounded hover:bg-emerald-500/10 hover:text-emerald-600 opacity-0 group-hover/ch:opacity-100 transition-opacity"
-                    title="Télécharger le chapitre en PDF"
-                  >
-                    <Download className="w-3 h-3" />
-                  </button>
-                  <button
-                    onClick={(e) => { e.stopPropagation(); callbacks.onEditChapitre(ch) }}
-                    className="p-1 rounded hover:bg-primary/10 hover:text-primary opacity-0 group-hover/ch:opacity-100 transition-opacity"
-                  >
+                  <Badge variant="secondary" className="text-[10px] px-1.5 py-0 h-4">{chapitresOf(t.id).length} chap.</Badge>
+                  <button onClick={(e) => { e.stopPropagation(); callbacks.onEditTitre(t) }} className="p-1 rounded hover:bg-primary/10 hover:text-primary opacity-0 group-hover/ti:opacity-100 transition-opacity">
                     <Pencil className="w-3 h-3" />
                   </button>
-                  <button
-                    onClick={(e) => { e.stopPropagation(); callbacks.onDeleteChapitre(ch) }}
-                    className="p-1 rounded hover:bg-destructive/10 hover:text-destructive opacity-0 group-hover/ch:opacity-100 transition-opacity"
-                  >
+                  <button onClick={(e) => { e.stopPropagation(); callbacks.onDeleteTitre(t) }} className="p-1 rounded hover:bg-destructive/10 hover:text-destructive opacity-0 group-hover/ti:opacity-100 transition-opacity">
                     <Trash2 className="w-3 h-3" />
                   </button>
                 </div>
               </div>
             </AccordionTrigger>
-
             <AccordionContent className="px-0 pb-0">
-              <Accordion type="multiple" className="w-full">
-                {sectionsOf(ch.id).map((sec, sIdx) => {
-                  const secArts = articlesOf(sec.id)
-                  return (
-                    <AccordionItem key={sec.id} value={`sec-${sIdx}`} className="border-0 border-t border-border/30">
-                      {/* Section trigger */}
-                      <AccordionTrigger className="hover:no-underline px-3 py-2 hover:bg-muted/40 [&>svg]:shrink-0 [&>svg]:ml-1">
-                        <div className="flex items-start gap-2 w-full text-left group/sec">
-                          <span className="text-[10px] text-muted-foreground shrink-0 mt-0.5">§&nbsp;{sec.numero}</span>
-                          <span className="flex-1 text-xs font-medium italic leading-tight line-clamp-2">{sec.titre}</span>
-                          <div className="flex items-center gap-0.5 shrink-0 ml-1">
-                            <Badge variant="outline" className="text-[10px] px-1 py-0 h-4">{secArts.length}</Badge>
-                            <button
-                              onClick={(e) => { e.stopPropagation(); callbacks.onPdfSection(sec, ch) }}
-                              className="p-1 rounded hover:bg-emerald-500/10 hover:text-emerald-600 opacity-0 group-hover/sec:opacity-100 transition-opacity"
-                              title="Télécharger la section en PDF"
-                            >
-                              <Download className="w-3 h-3" />
-                            </button>
-                            <button
-                              onClick={(e) => { e.stopPropagation(); callbacks.onEditSection(sec) }}
-                              className="p-1 rounded hover:bg-primary/10 hover:text-primary opacity-0 group-hover/sec:opacity-100 transition-opacity"
-                            >
-                              <Pencil className="w-3 h-3" />
-                            </button>
-                            <button
-                              onClick={(e) => { e.stopPropagation(); callbacks.onDeleteSection(sec) }}
-                              className="p-1 rounded hover:bg-destructive/10 hover:text-destructive opacity-0 group-hover/sec:opacity-100 transition-opacity"
-                            >
-                              <Trash2 className="w-3 h-3" />
-                            </button>
-                          </div>
-                        </div>
-                      </AccordionTrigger>
-
-                      <AccordionContent className="pb-1">
-                        <div className="pl-4 pr-2 space-y-0.5">
-                          {secArts.map((art) => (
-                            <div key={art.id} className="group/art flex items-center gap-1">
-                              <button
-                                onClick={() => { onSelectArticle(art); onClose?.() }}
-                                className={cn(
-                                  "flex-1 text-left text-xs px-2 py-1.5 rounded transition-colors",
-                                  "hover:bg-primary/10 hover:text-primary",
-                                  selectedArticle?.id === art.id
-                                    ? "bg-primary/15 text-primary font-medium"
-                                    : "text-foreground/80"
-                                )}
-                              >
-                                <span className="font-mono text-[10px] text-muted-foreground mr-1">Art.&nbsp;{art.numero}</span>
-                                {art.titre}
-                              </button>
-                              <div className="flex gap-0.5 opacity-0 group-hover/art:opacity-100 transition-opacity shrink-0">
-                                <button
-                                  onClick={() => callbacks.onEditArticle(art)}
-                                  className="p-1 rounded hover:bg-primary/10 hover:text-primary"
-                                >
-                                  <Pencil className="w-3 h-3" />
-                                </button>
-                                <button
-                                  onClick={() => callbacks.onDeleteArticle(art)}
-                                  className="p-1 rounded hover:bg-destructive/10 hover:text-destructive"
-                                >
-                                  <Trash2 className="w-3 h-3" />
-                                </button>
-                              </div>
-                            </div>
-                          ))}
-                          {/* Ajouter un article */}
-                          <button
-                            onClick={() => callbacks.onAddArticle(sec.id, sec.chapitreId)}
-                            className="w-full text-left text-[11px] px-2 py-1 rounded text-muted-foreground hover:text-primary hover:bg-primary/5 flex items-center gap-1 transition-colors"
-                          >
-                            <Plus className="w-3 h-3" /> Ajouter un article
-                          </button>
-                        </div>
-                      </AccordionContent>
-                    </AccordionItem>
-                  )
-                })}
-              </Accordion>
-
-              {/* Ajouter une section */}
-              <button
-                onClick={() => callbacks.onAddSection(ch.id)}
-                className="w-full text-left text-[11px] px-3 py-2 border-t border-border/30 text-muted-foreground hover:text-primary hover:bg-muted/40 flex items-center gap-1 transition-colors"
-              >
-                <Plus className="w-3 h-3" /> Ajouter une section
-              </button>
+              <div className="pl-2 py-1 space-y-1">
+                <Accordion type="multiple" className="w-full space-y-1">
+                  {chapitresOf(t.id).map((ch) => renderChapitre(ch))}
+                </Accordion>
+                <button onClick={() => callbacks.onAddChapitre(t.id)} className="w-full text-left text-[11px] px-3 py-2 rounded text-muted-foreground hover:text-primary hover:bg-muted/40 flex items-center gap-1 transition-colors border-t border-border/30 mt-1">
+                  <Plus className="w-3 h-3" /> Ajouter un chapitre
+                </button>
+              </div>
             </AccordionContent>
           </AccordionItem>
         ))}
       </Accordion>
 
-      {/* Ajouter un chapitre */}
+      {/* Chapitres sans titre */}
+      {orphanChapitres.length > 0 && (
+        <div className="space-y-1 mt-1">
+          <Accordion type="multiple" className="w-full space-y-1">
+            {orphanChapitres.map((ch) => renderChapitre(ch))}
+          </Accordion>
+        </div>
+      )}
+
+      {/* Ajouter un titre */}
       <button
-        onClick={callbacks.onAddChapitre}
-        className="w-full text-left text-[11px] px-3 py-2.5 mt-1 rounded-md border border-dashed border-border text-muted-foreground hover:text-primary hover:border-primary/50 hover:bg-primary/5 flex items-center gap-1.5 transition-colors"
+        onClick={callbacks.onAddTitre}
+        className="w-full text-left text-[11px] px-3 py-2.5 mt-1 rounded-md border border-dashed border-primary/30 text-muted-foreground hover:text-primary hover:border-primary/50 hover:bg-primary/5 flex items-center gap-1.5 transition-colors"
       >
-        <Plus className="w-3.5 h-3.5" /> Ajouter un chapitre
+        <Plus className="w-3.5 h-3.5" /> Ajouter un titre
       </button>
     </div>
   )
@@ -1085,23 +1173,43 @@ function ArticleView({
 // ─── Composant principal ──────────────────────────────────────────────────────
 
 export function CodeBrowser() {
+  const [titres,    setTitres]    = useState<Titre[]>(initialTitres)
   const [chapitres, setChapitres] = useState<Chapitre[]>(initialChapitres)
   const [sections,  setSections]  = useState<Section[]>(initialSections)
   const [articles,  setArticles]  = useState<Article[]>(initialArticles)
 
-  const [searchQuery,    setSearchQuery]    = useState("")
+  const [searchQuery,     setSearchQuery]     = useState("")
   const [selectedArticle, setSelectedArticle] = useState<Article | null>(null)
-  const [mobileNavOpen,  setMobileNavOpen]  = useState(false)
+  const [mobileNavOpen,   setMobileNavOpen]   = useState(false)
 
-  const [chapterDialog, setChapterDialog] = useState<{ open: boolean; editing?: Chapitre }>({ open: false })
+  const [titreDialog,   setTitreDialog]   = useState<{ open: boolean; editing?: Titre }>({ open: false })
+  const [chapterDialog, setChapterDialog] = useState<{ open: boolean; editing?: Chapitre; defaultTitreId?: string }>({ open: false })
   const [sectionDialog, setSectionDialog] = useState<{ open: boolean; editing?: Section; defaultChapitreId?: string }>({ open: false })
   const [articleDialog, setArticleDialog] = useState<{ open: boolean; editing?: Article; defaultSectionId?: string }>({ open: false })
   const [deleteConfirm, setDeleteConfirm] = useState<{
-    open: boolean; type?: "chapitre" | "section" | "article"; id?: string; label?: string
+    open: boolean; type?: "titre" | "chapitre" | "section" | "article"; id?: string; label?: string
   }>({ open: false })
 
+  // ── CRUD Titres ───────────────────────────────────────────────────────────
+  function saveTitre(data: Pick<Titre, "numero" | "titre">) {
+    if (titreDialog.editing) {
+      setTitres((prev) => prev.map((t) => t.id === titreDialog.editing!.id ? { ...t, ...data } : t))
+    } else {
+      setTitres((prev) => [...prev, { id: `t${Date.now()}`, ...data }])
+    }
+  }
+
+  function deleteTitre(id: string) {
+    const chapIds = chapitres.filter((c) => c.titreId === id).map((c) => c.id)
+    setArticles((prev) => prev.filter((a) => !chapIds.includes(a.chapitreId)))
+    setSections((prev) => prev.filter((s) => !chapIds.includes(s.chapitreId)))
+    setChapitres((prev) => prev.filter((c) => c.titreId !== id))
+    setTitres((prev) => prev.filter((t) => t.id !== id))
+    if (selectedArticle && chapIds.includes(selectedArticle.chapitreId)) setSelectedArticle(null)
+  }
+
   // ── CRUD Chapitres ────────────────────────────────────────────────────────
-  function saveChapitre(data: Pick<Chapitre, "numero" | "titre">) {
+  function saveChapitre(data: Pick<Chapitre, "numero" | "titre" | "titreId">) {
     if (chapterDialog.editing) {
       setChapitres((prev) => prev.map((c) => c.id === chapterDialog.editing!.id ? { ...c, ...data } : c))
     } else {
@@ -1150,6 +1258,7 @@ export function CodeBrowser() {
   // ── Dispatch suppression ──────────────────────────────────────────────────
   function handleDeleteConfirm() {
     if (!deleteConfirm.id || !deleteConfirm.type) return
+    if (deleteConfirm.type === "titre")    deleteTitre(deleteConfirm.id)
     if (deleteConfirm.type === "chapitre") deleteChapitre(deleteConfirm.id)
     if (deleteConfirm.type === "section")  deleteSection(deleteConfirm.id)
     if (deleteConfirm.type === "article")  deleteArticle(deleteConfirm.id)
@@ -1158,7 +1267,10 @@ export function CodeBrowser() {
 
   // ── Callbacks sommaire ────────────────────────────────────────────────────
   const tocCallbacks: TOCCallbacks = {
-    onAddChapitre:    ()    => setChapterDialog({ open: true }),
+    onAddTitre:       ()    => setTitreDialog({ open: true }),
+    onEditTitre:      (t)   => setTitreDialog({ open: true, editing: t }),
+    onDeleteTitre:    (t)   => setDeleteConfirm({ open: true, type: "titre", id: t.id, label: `Titre ${t.numero}` }),
+    onAddChapitre:    (tid) => setChapterDialog({ open: true, defaultTitreId: tid }),
     onEditChapitre:   (ch)  => setChapterDialog({ open: true, editing: ch }),
     onDeleteChapitre: (ch)  => setDeleteConfirm({ open: true, type: "chapitre", id: ch.id, label: `Chapitre ${ch.numero}` }),
     onPdfChapitre: (ch) => {
@@ -1177,7 +1289,7 @@ export function CodeBrowser() {
     },
     onAddSection:     (cid) => setSectionDialog({ open: true, defaultChapitreId: cid }),
     onEditSection:    (s)   => setSectionDialog({ open: true, editing: s }),
-    onDeleteSection:  (s)   => setDeleteConfirm({ open: true, type: "section",  id: s.id,  label: `Section ${s.numero}` }),
+    onDeleteSection:  (s)   => setDeleteConfirm({ open: true, type: "section", id: s.id, label: `Section ${s.numero}` }),
     onPdfSection: (s, ch) => {
       const pdfSec: PdfSection = {
         numero: s.numero,
@@ -1192,7 +1304,7 @@ export function CodeBrowser() {
     },
     onAddArticle:     (sid) => setArticleDialog({ open: true, defaultSectionId: sid }),
     onEditArticle:    (a)   => setArticleDialog({ open: true, editing: a }),
-    onDeleteArticle:  (a)   => setDeleteConfirm({ open: true, type: "article",  id: a.id,  label: `Article ${a.numero}` }),
+    onDeleteArticle:  (a)   => setDeleteConfirm({ open: true, type: "article", id: a.id, label: `Article ${a.numero}` }),
   }
 
   // ── Recherche ─────────────────────────────────────────────────────────────
@@ -1222,11 +1334,11 @@ export function CodeBrowser() {
             <CardTitle className="text-foreground flex items-center gap-2 text-base">
               <BookOpen className="w-5 h-5" /> Sommaire
             </CardTitle>
-            <CardDescription className="text-xs">Chapitres · Sections · Articles</CardDescription>
+            <CardDescription className="text-xs">Titres · Chapitres · Sections · Articles</CardDescription>
           </CardHeader>
           <CardContent className="max-h-[calc(100vh-14rem)] overflow-y-auto pr-2">
             <TableOfContents
-              chapitres={chapitres} sections={sections} articles={articles}
+              titres={titres} chapitres={chapitres} sections={sections} articles={articles}
               selectedArticle={selectedArticle} onSelectArticle={setSelectedArticle}
               callbacks={tocCallbacks}
             />
@@ -1253,7 +1365,7 @@ export function CodeBrowser() {
                   </SheetHeader>
                   <div className="mt-4">
                     <TableOfContents
-                      chapitres={chapitres} sections={sections} articles={articles}
+                      titres={titres} chapitres={chapitres} sections={sections} articles={articles}
                       selectedArticle={selectedArticle} onSelectArticle={setSelectedArticle}
                       onClose={() => setMobileNavOpen(false)} callbacks={tocCallbacks}
                     />
@@ -1382,10 +1494,18 @@ export function CodeBrowser() {
       </div>
 
       {/* ── Dialogs ── */}
+      <TitreFormDialog
+        open={titreDialog.open}
+        onClose={() => setTitreDialog({ open: false })}
+        initial={titreDialog.editing}
+        onSave={saveTitre}
+      />
       <ChapterFormDialog
         open={chapterDialog.open}
         onClose={() => setChapterDialog({ open: false })}
         initial={chapterDialog.editing}
+        titres={titres}
+        defaultTitreId={chapterDialog.defaultTitreId}
         onSave={saveChapitre}
       />
       <SectionFormDialog

@@ -33,7 +33,7 @@ import {
   type PdfSection,
   type PdfChapitre,
 } from "@/lib/pdf-export"
-import { useSession } from "@/lib/auth-client"
+import { useRole } from "@/lib/use-role"
 import { canAdd, canEdit, canDelete } from "@/lib/permissions"
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -1182,8 +1182,7 @@ function ArticleView({
 // ─── Composant principal ──────────────────────────────────────────────────────
 
 export function CodeBrowser() {
-  const { data: session } = useSession()
-  const role = (session?.user as { role?: string } | undefined)?.role
+  const role       = useRole()
   const pCanAdd    = canAdd(role)
   const pCanEdit   = canEdit(role)
   const pCanDelete = canDelete(role)

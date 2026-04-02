@@ -3,7 +3,6 @@ import { AppHeader } from "@/components/app-header"
 import { StatsCards } from "@/components/stats-cards"
 import { RecentActivity } from "@/components/recent-activity"
 import { QuickActions } from "@/components/quick-actions"
-import { ProjectTimeline } from "@/components/project-timeline"
 import { DigitalTransitionBanner } from "@/components/digital-transition-banner"
 
 export default function DashboardPage() {
@@ -26,11 +25,8 @@ export default function DashboardPage() {
             {/* Main Content */}
             <div className="grid gap-4 sm:gap-6 lg:grid-cols-2">
               <QuickActions />
-              <ProjectTimeline />
+              <RecentActivity />
             </div>
-
-            {/* Recent Activity */}
-            <RecentActivity />
           </div>
         </main>
       </div>

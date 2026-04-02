@@ -43,7 +43,7 @@ export default function LoginPage() {
             <Sparkles className="w-6 h-6 text-primary-foreground" />
           </div>
           <div>
-            <h1 className="text-2xl font-bold text-foreground tracking-tight">CadastreMinier</h1>
+            <h1 className="text-2xl font-bold text-foreground tracking-tight">Cadastre Minier</h1>
             <p className="text-sm text-muted-foreground mt-1">
               Plateforme de digitalisation du cadastre minier
             </p>

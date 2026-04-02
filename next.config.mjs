@@ -11,7 +11,7 @@ const nextConfig = {
       },
     ],
   },
-  serverExternalPackages: ["pg", "@prisma/adapter-pg", "@prisma/client", "prisma", "better-auth"],
+  serverExternalPackages: ["pg", "@prisma/adapter-pg", "@prisma/client", "prisma", "better-auth", "openai"],
 }
 
 export default nextConfig

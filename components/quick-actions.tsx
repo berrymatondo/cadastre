@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { BookOpen, Search, MessageSquare, Gavel, ArrowRight } from "lucide-react"
+import { BookOpen, Search, FileText, Gavel, ArrowRight } from "lucide-react"
 
 const actions = [
   {
@@ -20,10 +20,10 @@ const actions = [
     color: "bg-chart-2/10 text-chart-2",
   },
   {
-    title: "Assistant IA",
-    description: "Posez vos questions juridiques",
-    icon: MessageSquare,
-    href: "/assistant",
+    title: "Consulter le règlement minier",
+    description: "Accédez aux textes réglementaires d'application",
+    icon: FileText,
+    href: "/reglement-minier",
     color: "bg-chart-3/10 text-chart-3",
   },
   {

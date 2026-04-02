@@ -12,6 +12,7 @@ interface Message {
   id: string
   role: "user" | "assistant"
   content: string
+  sources?: string[]
 }
 
 const suggestedQuestions = [
@@ -55,16 +56,37 @@ export function AIChat() {
     setInput("")
     setIsLoading(true)
 
-    // Simulate AI response
-    setTimeout(() => {
+    try {
+      // Construire l'historique pour le contexte de conversation
+      const history = messages.map((m) => ({ role: m.role, content: m.content }))
+
+      const res = await fetch("/api/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message: messageContent, history }),
+      })
+
+      const data = await res.json()
+
       const aiResponse: Message = {
         id: (Date.now() + 1).toString(),
         role: "assistant",
-        content: generateMockResponse(messageContent),
+        content: res.ok ? data.reply : "Désolé, une erreur s'est produite. Veuillez réessayer.",
+        sources: data.sources ?? [],
       }
       setMessages((prev) => [...prev, aiResponse])
+    } catch {
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: (Date.now() + 1).toString(),
+          role: "assistant",
+          content: "Impossible de contacter le serveur. Vérifiez votre connexion.",
+        },
+      ])
+    } finally {
       setIsLoading(false)
-    }, 1500)
+    }
   }
 
   return (
@@ -104,17 +126,34 @@ export function AIChat() {
                 )}
               </AvatarFallback>
             </Avatar>
-            <div
-              className={cn(
-                "rounded-lg px-3 py-2 sm:px-4 sm:py-3 max-w-[85%] sm:max-w-[80%]",
-                message.role === "assistant"
-                  ? "bg-muted text-foreground"
-                  : "bg-primary text-primary-foreground"
+            <div className="max-w-[85%] sm:max-w-[80%] space-y-1">
+              <div
+                className={cn(
+                  "rounded-lg px-3 py-2 sm:px-4 sm:py-3",
+                  message.role === "assistant"
+                    ? "bg-muted text-foreground"
+                    : "bg-primary text-primary-foreground"
+                )}
+              >
+                <p className="text-xs sm:text-sm leading-relaxed whitespace-pre-wrap">
+                  {message.content}
+                </p>
+              </div>
+              {message.role === "assistant" && message.sources && message.sources.length > 0 && (
+                <div className="px-1">
+                  <p className="text-[10px] text-muted-foreground mb-1">Sources :</p>
+                  <div className="flex flex-wrap gap-1">
+                    {message.sources.map((src) => (
+                      <span
+                        key={src}
+                        className="text-[10px] px-2 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/20"
+                      >
+                        {src}
+                      </span>
+                    ))}
+                  </div>
+                </div>
               )}
-            >
-              <p className="text-xs sm:text-sm leading-relaxed whitespace-pre-wrap">
-                {message.content}
-              </p>
             </div>
           </div>
         ))}
@@ -182,72 +221,3 @@ export function AIChat() {
   )
 }
 
-function generateMockResponse(question: string): string {
-  const responses: Record<string, string> = {
-    permis: `Selon le Code minier, l'obtention d'un permis d'exploitation minière est soumise aux conditions suivantes :
-
-1. **Capacités techniques** : Le demandeur doit démontrer ses capacités techniques et financières.
-
-2. **Étude de faisabilité** : Une étude de faisabilité approuvée est requise.
-
-3. **Plan environnemental** : Un plan de gestion environnementale et sociale doit être validé.
-
-4. **Caution financière** : Le versement d'une caution pour la réhabilitation du site.
-
-5. **Superficie** : La superficie maximale est définie selon le type de substance.
-
-Je vous recommande de consulter les articles 68 à 85 du Code minier pour plus de détails.`,
-    durée: `La durée de validité d'un permis de recherche est définie par le Code minier :
-
-• **Permis de recherche initial** : 4 ans
-• **Premier renouvellement** : 3 ans
-• **Second renouvellement** : 2 ans
-
-La superficie est réduite de 50% à chaque renouvellement. Le titulaire doit justifier des travaux effectués et des dépenses engagées.`,
-    conflit: `La résolution des conflits fonciers dans les zones minières suit plusieurs étapes :
-
-1. **Médiation préalable** : Tentative de conciliation entre les parties.
-
-2. **Commission de règlement** : Saisine de la commission locale de règlement des conflits.
-
-3. **Arbitrage administratif** : Intervention du Cadastre minier et des autorités locales.
-
-4. **Recours juridictionnel** : Saisine des tribunaux compétents en dernier ressort.
-
-Les précédents de jurisprudence montrent que la priorité est généralement donnée aux droits antérieurs dûment établis.`,
-    fiscal: `Les obligations fiscales d'un titulaire de titre minier comprennent :
-
-• **Droits superficiaires** : Payables annuellement selon la superficie.
-• **Redevance minière** : Calculée sur la valeur des produits extraits (2% à 4% selon les substances).
-• **Taxe à l'exportation** : Variable selon les produits.
-• **Impôt sur les bénéfices** : Taux applicable au secteur minier.
-• **Taxe de développement communautaire** : 0,3% du chiffre d'affaires.
-
-Consultez les articles 220 à 250 du Code minier pour les détails.`,
-  }
-
-  const lowerQuestion = question.toLowerCase()
-  
-  if (lowerQuestion.includes("permis") && lowerQuestion.includes("exploitation")) {
-    return responses.permis
-  }
-  if (lowerQuestion.includes("durée") || lowerQuestion.includes("validité")) {
-    return responses.durée
-  }
-  if (lowerQuestion.includes("conflit") || lowerQuestion.includes("foncier")) {
-    return responses.conflit
-  }
-  if (lowerQuestion.includes("fiscal") || lowerQuestion.includes("obligations")) {
-    return responses.fiscal
-  }
-
-  return `Je comprends votre question concernant "${question.substring(0, 50)}...".
-
-Pour vous fournir une réponse précise, je vous suggère de :
-
-1. Consulter les articles pertinents du Code minier via la section dédiée.
-2. Vérifier les textes d'application dans le Règlement minier.
-3. Examiner les précédents similaires dans la base de jurisprudence.
-
-N'hésitez pas à reformuler votre question ou à préciser le contexte pour une réponse plus détaillée.`
-}

@@ -1,31 +1,34 @@
-"use client"
+"use client";
 
-import Image from "next/image"
-import { ArrowRight, ScanLine, Database, FileText } from "lucide-react"
+import Image from "next/image";
+import { ArrowRight, ScanLine, Database, FileText } from "lucide-react";
 
 const steps = [
   {
     label: "Documents papier",
-    caption: "Archives, registres et dossiers miniers physiques accumulés depuis des décennies",
+    caption:
+      "Archives, registres et dossiers miniers physiques accumulés depuis des décennies",
     Icon: FileText,
     img: "https://images.unsplash.com/photo-1568667256549-094345857637?auto=format&fit=crop&w=800&q=75",
     alt: "Piles de documents et archives papier",
   },
   {
     label: "Numérisation",
-    caption: "Scanning, indexation et structuration des textes juridiques et cartographiques",
+    caption:
+      "Scanning, indexation et structuration des textes juridiques et cartographiques",
     Icon: ScanLine,
     img: "https://images.unsplash.com/photo-1586281380349-632531db7ed4?auto=format&fit=crop&w=800&q=75",
     alt: "Processus de numérisation de documents",
   },
   {
     label: "Plateforme digitale",
-    caption: "Recherche intelligente, assistant IA et accès instantané depuis n'importe où",
+    caption:
+      "Recherche intelligente, assistant IA et accès instantané depuis n'importe où",
     Icon: Database,
-    img: "https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=800&q=75",
-    alt: "Dashboard digital avec données structurées",
+    img: "https://images.unsplash.com/photo-1523848309072-c199db53f137?q=80&w=2340&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+    alt: "Site minier au Katanga, RDC",
   },
-]
+];
 
 export function DigitalTransitionBanner() {
   return (
@@ -43,7 +46,7 @@ export function DigitalTransitionBanner() {
       {/* Steps */}
       <div className="flex flex-col sm:flex-row sm:items-stretch">
         {steps.map((step, idx) => (
-          <div key={step.label} className="flex sm:flex-col flex-1">
+          <div key={step.label} className="mx-1 flex sm:flex-col flex-1">
             {/* Card */}
             <div className="flex sm:flex-col flex-row flex-1 group">
               {/* Image */}
@@ -52,7 +55,7 @@ export function DigitalTransitionBanner() {
                   src={step.img}
                   alt={step.alt}
                   fill
-                  className="object-cover transition-transform duration-500 group-hover:scale-105"
+                  className="rounded-lg object-cover transition-transform duration-500 group-hover:scale-105"
                   sizes="(max-width: 640px) 112px, 33vw"
                 />
                 <div className="absolute inset-0 bg-linear-to-t from-black/60 via-black/20 to-transparent" />
@@ -64,7 +67,9 @@ export function DigitalTransitionBanner() {
                 <div className="hidden sm:flex absolute bottom-3 left-3">
                   <div className="flex items-center gap-1.5 bg-black/40 backdrop-blur-sm border border-white/20 rounded-full px-2.5 py-1">
                     <step.Icon className="w-3.5 h-3.5 text-white" />
-                    <span className="text-xs text-white font-medium">{step.label}</span>
+                    <span className="text-xs text-white font-medium">
+                      {step.label}
+                    </span>
                   </div>
                 </div>
               </div>
@@ -76,7 +81,9 @@ export function DigitalTransitionBanner() {
                   <div className="w-6 h-6 rounded-md bg-primary/10 flex items-center justify-center shrink-0">
                     <step.Icon className="w-3.5 h-3.5 text-primary" />
                   </div>
-                  <p className="font-semibold text-sm text-foreground">{step.label}</p>
+                  <p className="font-semibold text-sm text-foreground">
+                    {step.label}
+                  </p>
                 </div>
                 <p className="text-xs text-muted-foreground leading-relaxed line-clamp-3 sm:line-clamp-none">
                   {step.caption}
@@ -101,5 +108,5 @@ export function DigitalTransitionBanner() {
         ))}
       </div>
     </div>
-  )
+  );
 }

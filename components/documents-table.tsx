@@ -18,10 +18,10 @@ import {
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select"
-import { Upload, Download, Trash2, Loader2, FileUp, AlertTriangle, Clock } from "lucide-react"
+import { Upload, Download, Trash2, Loader2, FileUp, AlertTriangle, Clock, Pencil, Search, X, Filter } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { useRole } from "@/lib/use-role"
-import { canAdd, canDelete } from "@/lib/permissions"
+import { canAdd, canEdit, canDelete } from "@/lib/permissions"
 
 interface DocumentMeta {
   id: string
@@ -41,6 +41,45 @@ function formatSize(bytes: number): string {
   return `${(bytes / (1024 * 1024)).toFixed(1)} Mo`
 }
 
+function getExtension(mimeType: string, nom: string): string {
+  // Priorité au nom de fichier
+  const dotIdx = nom.lastIndexOf(".")
+  if (dotIdx !== -1) return nom.slice(dotIdx + 1).toUpperCase()
+  // Fallback sur le MIME type
+  const mimeMap: Record<string, string> = {
+    "application/pdf": "PDF",
+    "application/msword": "DOC",
+    "application/vnd.openxmlformats-officedocument.wordprocessingml.document": "DOCX",
+    "application/vnd.ms-excel": "XLS",
+    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": "XLSX",
+    "application/vnd.ms-powerpoint": "PPT",
+    "application/vnd.openxmlformats-officedocument.presentationml.presentation": "PPTX",
+    "image/jpeg": "JPG",
+    "image/png": "PNG",
+    "image/gif": "GIF",
+    "text/plain": "TXT",
+    "application/zip": "ZIP",
+    "application/octet-stream": "BIN",
+  }
+  return mimeMap[mimeType] ?? "FILE"
+}
+
+function extColor(ext: string): string {
+  const map: Record<string, string> = {
+    PDF: "bg-red-100 text-red-700 dark:bg-red-950/40 dark:text-red-400",
+    DOC: "bg-blue-100 text-blue-700 dark:bg-blue-950/40 dark:text-blue-400",
+    DOCX: "bg-blue-100 text-blue-700 dark:bg-blue-950/40 dark:text-blue-400",
+    XLS: "bg-green-100 text-green-700 dark:bg-green-950/40 dark:text-green-400",
+    XLSX: "bg-green-100 text-green-700 dark:bg-green-950/40 dark:text-green-400",
+    PPT: "bg-orange-100 text-orange-700 dark:bg-orange-950/40 dark:text-orange-400",
+    PPTX: "bg-orange-100 text-orange-700 dark:bg-orange-950/40 dark:text-orange-400",
+    JPG: "bg-purple-100 text-purple-700 dark:bg-purple-950/40 dark:text-purple-400",
+    PNG: "bg-purple-100 text-purple-700 dark:bg-purple-950/40 dark:text-purple-400",
+    ZIP: "bg-yellow-100 text-yellow-700 dark:bg-yellow-950/40 dark:text-yellow-400",
+  }
+  return map[ext] ?? "bg-muted text-muted-foreground"
+}
+
 function DocumentsTableInner() {
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -49,16 +88,29 @@ function DocumentsTableInner() {
   const role = useRole()
   const [docs, setDocs] = useState<DocumentMeta[]>([])
   const [loading, setLoading] = useState(true)
-  const [uploadOpen, setUploadOpen] = useState(false)
-  const [deleteTarget, setDeleteTarget] = useState<DocumentMeta | null>(null)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState("")
+
+  // Filtres
+  const [search, setSearch] = useState("")
+  const [filterCategorie, setFilterCategorie] = useState("tous")
+  const [filterStatut, setFilterStatut] = useState("tous")
+
+  // Dialogs
+  const [uploadOpen, setUploadOpen] = useState(false)
+  const [editTarget, setEditTarget] = useState<DocumentMeta | null>(null)
+  const [deleteTarget, setDeleteTarget] = useState<DocumentMeta | null>(null)
 
   // Upload form
   const [nom, setNom] = useState("")
   const [categorie, setCategorie] = useState("")
   const [dateEcheance, setDateEcheance] = useState("")
   const [fichier, setFichier] = useState<File | null>(null)
+
+  // Edit form
+  const [editNom, setEditNom] = useState("")
+  const [editCategorie, setEditCategorie] = useState("")
+  const [editDate, setEditDate] = useState("")
 
   const fetchDocs = useCallback(async () => {
     setLoading(true)
@@ -86,6 +138,14 @@ function DocumentsTableInner() {
     router.replace(`/documents?${params.toString()}`)
   }
 
+  function openEdit(doc: DocumentMeta) {
+    setEditTarget(doc)
+    setEditNom(doc.nom)
+    setEditCategorie(doc.categorie)
+    setEditDate(format(new Date(doc.dateEcheance), "yyyy-MM-dd"))
+    setError("")
+  }
+
   async function handleUpload() {
     if (!nom || !categorie || !dateEcheance || !fichier) {
       setError("Tous les champs sont requis")
@@ -99,13 +159,31 @@ function DocumentsTableInner() {
       fd.append("categorie", categorie)
       fd.append("dateEcheance", dateEcheance)
       fd.append("fichier", fichier)
-
       const res = await fetch("/api/documents", { method: "POST", body: fd })
       const data = await res.json()
       if (!res.ok) { setError(data.error ?? "Erreur lors de l'upload"); return }
-
       setUploadOpen(false)
       setNom(""); setCategorie(""); setDateEcheance(""); setFichier(null)
+      fetchDocs()
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  async function handleEdit() {
+    if (!editTarget) return
+    if (!editNom || !editCategorie || !editDate) { setError("Tous les champs sont requis"); return }
+    setSaving(true)
+    setError("")
+    try {
+      const res = await fetch(`/api/documents/${editTarget.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ nom: editNom, categorie: editCategorie, dateEcheance: editDate }),
+      })
+      const data = await res.json()
+      if (!res.ok) { setError(data.error ?? "Erreur lors de la modification"); return }
+      setEditTarget(null)
       fetchDocs()
     } finally {
       setSaving(false)
@@ -131,12 +209,34 @@ function DocumentsTableInner() {
   const expiredCount = docs.filter((d) => getStatus(d.dateEcheance) === "expired").length
   const warningCount = docs.filter((d) => getStatus(d.dateEcheance) === "warning").length
 
+  const categories = ["tous", ...Array.from(new Set(docs.map((d) => d.categorie))).sort()]
+
+  const filteredDocs = docs.filter((doc) => {
+    if (search && !doc.nom.toLowerCase().includes(search.toLowerCase()) &&
+        !doc.categorie.toLowerCase().includes(search.toLowerCase())) return false
+    if (filterCategorie !== "tous" && doc.categorie !== filterCategorie) return false
+    if (filterStatut !== "tous") {
+      const status = getStatus(doc.dateEcheance)
+      if (filterStatut === "expired" && status !== "expired") return false
+      if (filterStatut === "warning" && status !== "warning") return false
+      if (filterStatut === "ok" && status !== "ok") return false
+    }
+    return true
+  })
+
+  const hasActiveFilters = search !== "" || filterCategorie !== "tous" || filterStatut !== "tous"
+
+  function clearFilters() {
+    setSearch("")
+    setFilterCategorie("tous")
+    setFilterStatut("tous")
+  }
+
   return (
     <div className="space-y-4">
       {/* Barre de contrôle */}
       <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center justify-between">
         <div className="flex items-center gap-3 flex-wrap">
-          {/* Paramètre semaines */}
           <div className="flex items-center gap-2">
             <Clock className="w-4 h-4 text-muted-foreground shrink-0" />
             <span className="text-sm text-muted-foreground whitespace-nowrap">Alerte si échéance dans</span>
@@ -151,8 +251,6 @@ function DocumentsTableInner() {
               </SelectContent>
             </Select>
           </div>
-
-          {/* Compteurs */}
           {expiredCount > 0 && (
             <Badge variant="destructive" className="gap-1">
               <AlertTriangle className="w-3 h-3" />
@@ -166,13 +264,55 @@ function DocumentsTableInner() {
             </Badge>
           )}
         </div>
-
         {canAdd(role) && (
           <Button size="sm" className="gap-2 shrink-0" onClick={() => { setError(""); setUploadOpen(true) }}>
             <FileUp className="w-4 h-4" />
             Ajouter un document
           </Button>
         )}
+      </div>
+
+      {/* Filtres */}
+      <div className="flex flex-col sm:flex-row gap-2 items-start sm:items-center">
+        <div className="relative flex-1 max-w-xs">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+          <Input
+            placeholder="Rechercher un document…"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="pl-9 h-9 bg-background"
+          />
+        </div>
+        <div className="flex items-center gap-2 flex-wrap">
+          <Filter className="w-4 h-4 text-muted-foreground shrink-0" />
+          <Select value={filterCategorie} onValueChange={setFilterCategorie}>
+            <SelectTrigger className="h-9 w-36 text-sm">
+              <SelectValue placeholder="Catégorie" />
+            </SelectTrigger>
+            <SelectContent>
+              {categories.map((c) => (
+                <SelectItem key={c} value={c}>{c === "tous" ? "Toutes catégories" : c}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <Select value={filterStatut} onValueChange={setFilterStatut}>
+            <SelectTrigger className="h-9 w-36 text-sm">
+              <SelectValue placeholder="Statut" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="tous">Tous les statuts</SelectItem>
+              <SelectItem value="ok">Valides</SelectItem>
+              <SelectItem value="warning">Bientôt expirés</SelectItem>
+              <SelectItem value="expired">Expirés</SelectItem>
+            </SelectContent>
+          </Select>
+          {hasActiveFilters && (
+            <Button variant="ghost" size="sm" onClick={clearFilters} className="h-9 gap-1 text-muted-foreground">
+              <X className="w-3.5 h-3.5" />
+              Réinitialiser
+            </Button>
+          )}
+        </div>
       </div>
 
       {/* Tableau */}
@@ -194,12 +334,20 @@ function DocumentsTableInner() {
                 <TableHead>Catégorie</TableHead>
                 <TableHead>Date d&apos;échéance</TableHead>
                 <TableHead>Taille</TableHead>
-                <TableHead className="w-20 text-right">Actions</TableHead>
+                <TableHead className="w-28 text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {docs.map((doc) => {
+              {filteredDocs.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={5} className="text-center text-muted-foreground py-8 text-sm">
+                    Aucun document ne correspond aux filtres
+                  </TableCell>
+                </TableRow>
+              ) : null}
+              {filteredDocs.map((doc) => {
                 const status = getStatus(doc.dateEcheance)
+                const ext = getExtension(doc.mimeType, doc.nom)
                 return (
                   <TableRow
                     key={doc.id}
@@ -212,6 +360,9 @@ function DocumentsTableInner() {
                       <div className="flex items-center gap-2">
                         {status === "expired" && <AlertTriangle className="w-3.5 h-3.5 text-destructive shrink-0" />}
                         {status === "warning" && <Clock className="w-3.5 h-3.5 text-amber-500 shrink-0" />}
+                        <Badge variant="outline" className={cn("text-[10px] px-1.5 py-0 h-4 font-mono shrink-0", extColor(ext))}>
+                          {ext}
+                        </Badge>
                         <span>{doc.nom}</span>
                       </div>
                     </TableCell>
@@ -237,6 +388,11 @@ function DocumentsTableInner() {
                         <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleDownload(doc)} title="Télécharger">
                           <Download className="w-3.5 h-3.5" />
                         </Button>
+                        {canEdit(role) && (
+                          <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => openEdit(doc)} title="Modifier">
+                            <Pencil className="w-3.5 h-3.5" />
+                          </Button>
+                        )}
                         {canDelete(role) && (
                           <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:text-destructive" onClick={() => setDeleteTarget(doc)} title="Supprimer">
                             <Trash2 className="w-3.5 h-3.5" />
@@ -266,9 +422,7 @@ function DocumentsTableInner() {
             <div className="space-y-1.5">
               <Label>Catégorie</Label>
               <Select value={categorie} onValueChange={setCategorie}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Choisir une catégorie…" />
-                </SelectTrigger>
+                <SelectTrigger><SelectValue placeholder="Choisir une catégorie…" /></SelectTrigger>
                 <SelectContent>
                   {CATEGORIES.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}
                 </SelectContent>
@@ -280,12 +434,7 @@ function DocumentsTableInner() {
             </div>
             <div className="space-y-1.5">
               <Label htmlFor="doc-fichier">Fichier</Label>
-              <Input
-                id="doc-fichier"
-                type="file"
-                className="cursor-pointer"
-                onChange={(e) => setFichier(e.target.files?.[0] ?? null)}
-              />
+              <Input id="doc-fichier" type="file" className="cursor-pointer" onChange={(e) => setFichier(e.target.files?.[0] ?? null)} />
               {fichier && <p className="text-xs text-muted-foreground">{fichier.name} — {formatSize(fichier.size)}</p>}
             </div>
             {error && <p className="text-sm text-destructive">{error}</p>}
@@ -293,6 +442,42 @@ function DocumentsTableInner() {
           <DialogFooter>
             <Button variant="outline" onClick={() => setUploadOpen(false)} disabled={saving}>Annuler</Button>
             <Button onClick={handleUpload} disabled={saving} className="gap-2">
+              {saving && <Loader2 className="w-4 h-4 animate-spin" />}
+              Enregistrer
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Dialog modification */}
+      <Dialog open={!!editTarget} onOpenChange={(o) => !o && setEditTarget(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Modifier le document</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-2">
+            <div className="space-y-1.5">
+              <Label htmlFor="edit-nom">Nom du document</Label>
+              <Input id="edit-nom" value={editNom} onChange={(e) => setEditNom(e.target.value)} />
+            </div>
+            <div className="space-y-1.5">
+              <Label>Catégorie</Label>
+              <Select value={editCategorie} onValueChange={setEditCategorie}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {CATEGORIES.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="edit-date">Date d&apos;échéance</Label>
+              <Input id="edit-date" type="date" value={editDate} onChange={(e) => setEditDate(e.target.value)} />
+            </div>
+            {error && <p className="text-sm text-destructive">{error}</p>}
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setEditTarget(null)} disabled={saving}>Annuler</Button>
+            <Button onClick={handleEdit} disabled={saving} className="gap-2">
               {saving && <Loader2 className="w-4 h-4 animate-spin" />}
               Enregistrer
             </Button>

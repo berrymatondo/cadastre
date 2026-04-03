@@ -17,6 +17,7 @@ import {
   Menu,
   X,
   FolderOpen,
+  ListChecks,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import {
@@ -47,6 +48,7 @@ const secondaryNavItems: NavItem[] = [
   { icon: History, label: "Jurisprudence", href: "/jurisprudence" },
   { icon: Scale, label: "Journal Officiel", href: "/journal-officiel" },
   { icon: FolderOpen, label: "Documents", href: "/documents" },
+  { icon: ListChecks, label: "Actions", href: "/actions" },
 ]
 
 export function MobileNav() {

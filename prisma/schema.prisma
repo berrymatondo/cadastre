@@ -24,6 +24,7 @@ model User {
   updatedAt     DateTime  @updatedAt
   sessions      Session[]
   accounts      Account[]
+  actions       Action[]
 
   @@map("users")
 }
@@ -301,8 +302,49 @@ model Document {
   contenu      Bytes
   taille       Int
   mimeType     String
+  actionId     String?
+  action       Action?  @relation(fields: [actionId], references: [id], onDelete: Cascade)
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
   @@map("documents")
+}
+
+// ============================================================
+// PARAMÈTRES APPLICATION
+// ============================================================
+
+model Parametre {
+  cle       String   @id
+  valeur    String
+  label     String
+  updatedAt DateTime @updatedAt
+
+  @@map("parametres")
+}
+
+// ============================================================
+// ACTIONS (Todo list)
+// ============================================================
+
+enum ActionStatut {
+  a_faire
+  en_cours
+  termine
+  annule
+}
+
+model Action {
+  id           String       @id @default(cuid())
+  nom          String
+  description  String?
+  assigneeId   String?
+  assignee     User?        @relation(fields: [assigneeId], references: [id], onDelete: SetNull)
+  dateEcheance DateTime
+  statut       ActionStatut @default(a_faire)
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+  documents    Document[]
+
+  @@map("actions")
 }

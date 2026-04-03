@@ -22,13 +22,56 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
 
   if (!doc) return NextResponse.json({ error: "Document introuvable" }, { status: 404 })
 
+  // S'assurer que le nom de fichier a la bonne extension
+  const mimeToExt: Record<string, string> = {
+    "application/pdf": ".pdf",
+    "application/msword": ".doc",
+    "application/vnd.openxmlformats-officedocument.wordprocessingml.document": ".docx",
+    "application/vnd.ms-excel": ".xls",
+    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": ".xlsx",
+    "application/vnd.ms-powerpoint": ".ppt",
+    "application/vnd.openxmlformats-officedocument.presentationml.presentation": ".pptx",
+    "image/jpeg": ".jpg",
+    "image/png": ".png",
+    "image/gif": ".gif",
+    "text/plain": ".txt",
+    "application/zip": ".zip",
+  }
+
+  const expectedExt = mimeToExt[doc.mimeType] ?? ""
+  const nomLower = doc.nom.toLowerCase()
+  const filename = expectedExt && !nomLower.endsWith(expectedExt)
+    ? `${doc.nom}${expectedExt}`
+    : doc.nom
+
   return new Response(doc.contenu, {
     headers: {
       "Content-Type": doc.mimeType,
-      "Content-Disposition": `attachment; filename="${encodeURIComponent(doc.nom)}"`,
+      "Content-Disposition": `attachment; filename="${encodeURIComponent(filename)}"`,
       "Content-Length": doc.contenu.byteLength.toString(),
     },
   })
+}
+
+// PATCH /api/documents/[id] — modifier nom, catégorie, date d'échéance
+export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const role = await getRole(req)
+  if (!role) return NextResponse.json({ error: "Non authentifié" }, { status: 401 })
+
+  const { id } = await params
+  const { nom, categorie, dateEcheance } = await req.json()
+
+  if (!nom || !categorie || !dateEcheance) {
+    return NextResponse.json({ error: "Champs manquants" }, { status: 400 })
+  }
+
+  const doc = await prisma.document.update({
+    where: { id },
+    data: { nom, categorie, dateEcheance: new Date(dateEcheance) },
+    select: { id: true, nom: true, categorie: true, dateEcheance: true, taille: true, mimeType: true, createdAt: true },
+  })
+
+  return NextResponse.json(doc)
 }
 
 // DELETE /api/documents/[id] — supprimer (admin uniquement)

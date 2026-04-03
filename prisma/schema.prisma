@@ -288,3 +288,21 @@ model JournalOfficiel {
 
   @@map("journal_officiel")
 }
+
+// ============================================================
+// DOCUMENTS
+// ============================================================
+
+model Document {
+  id           String   @id @default(cuid())
+  nom          String
+  categorie    String
+  dateEcheance DateTime
+  contenu      Bytes
+  taille       Int
+  mimeType     String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@map("documents")
+}

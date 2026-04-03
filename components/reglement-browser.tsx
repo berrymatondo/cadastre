@@ -980,13 +980,13 @@ function TableOfContents({
           <AccordionItem
             key={t.id}
             value={`t-${tIdx}`}
-            className="border border-border/50 rounded-md overflow-hidden"
+            className="border border-cyan-500/40 rounded-md overflow-hidden"
           >
             {/* Titre trigger */}
-            <AccordionTrigger className="hover:no-underline px-3 py-2.5 bg-muted/50 hover:bg-muted/80 [&>svg]:shrink-0 [&>svg]:ml-1">
+            <AccordionTrigger className="hover:no-underline px-3 py-2.5 bg-cyan-500/10 hover:bg-cyan-500/20 [&>svg]:shrink-0 [&>svg]:ml-1">
               <div className="flex items-start gap-2 w-full text-left group/t">
-                <span className="text-[11px] font-bold text-primary/80 shrink-0 mt-0.5 uppercase">Titre&nbsp;{t.numero}</span>
-                <span className="flex-1 text-[11px] font-semibold uppercase tracking-wide leading-tight line-clamp-2">{t.titre}</span>
+                <span className="text-[11px] font-bold text-cyan-700 dark:text-cyan-400 shrink-0 mt-0.5 uppercase">Titre&nbsp;{t.numero}</span>
+                <span className="flex-1 text-[11px] font-semibold uppercase tracking-wide leading-tight line-clamp-2 text-cyan-900 dark:text-cyan-200">{t.titre}</span>
                 <div className="flex items-center gap-0.5 shrink-0 ml-1">
                   <Badge variant="secondary" className="text-[10px] px-1.5 py-0 h-4">{artCount(t.id)}</Badge>
                   {pCanEdit && <button
@@ -1012,12 +1012,12 @@ function TableOfContents({
                 {chapitresOf(t.id).map((ch, chIdx) => {
                   const chArts = articlesOf(ch.id)
                   return (
-                    <AccordionItem key={ch.id} value={`ch-${chIdx}`} className="border-0 border-t border-border/30">
+                    <AccordionItem key={ch.id} value={`ch-${chIdx}`} className="border-0 border-t border-indigo-500/20">
                       {/* Chapitre trigger */}
-                      <AccordionTrigger className="hover:no-underline px-3 py-2 bg-muted/30 hover:bg-muted/60 [&>svg]:shrink-0 [&>svg]:ml-1">
+                      <AccordionTrigger className="hover:no-underline px-3 py-2 bg-indigo-500/8 hover:bg-indigo-500/15 [&>svg]:shrink-0 [&>svg]:ml-1">
                         <div className="flex items-start gap-2 w-full text-left group/ch">
-                          <span className="text-[10px] font-bold text-primary/70 shrink-0 mt-0.5 uppercase">Chap.&nbsp;{ch.numero}</span>
-                          <span className="flex-1 text-[10px] font-semibold leading-tight line-clamp-2">{ch.titre}</span>
+                          <span className="text-[10px] font-bold text-indigo-600 dark:text-indigo-400 shrink-0 mt-0.5 uppercase">Chap.&nbsp;{ch.numero}</span>
+                          <span className="flex-1 text-[10px] font-semibold leading-tight line-clamp-2 text-indigo-900 dark:text-indigo-200">{ch.titre}</span>
                           <div className="flex items-center gap-0.5 shrink-0 ml-1">
                             <Badge variant="outline" className="text-[10px] px-1 py-0 h-4">{chArts.length}</Badge>
                             <button
@@ -1053,13 +1053,13 @@ function TableOfContents({
                                 onClick={() => { onSelectArticle(art); onClose?.() }}
                                 className={cn(
                                   "flex-1 text-left text-xs px-2 py-1.5 rounded transition-colors",
-                                  "hover:bg-primary/10 hover:text-primary",
+                                  "hover:bg-sky-500/10 hover:text-sky-700 dark:hover:text-sky-300",
                                   selectedArticle?.id === art.id
-                                    ? "bg-primary/15 text-primary font-medium"
+                                    ? "bg-sky-500/15 text-sky-700 dark:text-sky-300 font-medium"
                                     : "text-foreground/80"
                                 )}
                               >
-                                <span className="font-mono text-[10px] text-muted-foreground mr-1">Art.&nbsp;{art.numero}</span>
+                                <span className="font-mono text-[10px] text-sky-600 dark:text-sky-400 font-semibold mr-1">Art.&nbsp;{art.numero}</span>
                                 {art.titre}
                               </button>
                               {(pCanEdit || pCanDelete) && (

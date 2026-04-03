@@ -126,23 +126,23 @@
 
 /* ── Thèmes par rôle ─────────────────────────────────────────── */
 
-/* Admin — rouge/cramoisi */
+/* Admin — jaune/or */
 body.role-admin {
-  --primary: oklch(0.50 0.22 15);
-  --primary-foreground: oklch(0.985 0 0);
-  --ring: oklch(0.50 0.22 15);
-  --sidebar-primary: oklch(0.55 0.20 15);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-ring: oklch(0.50 0.22 15);
-  --chart-1: oklch(0.50 0.22 15);
+  --primary: oklch(0.72 0.18 85);
+  --primary-foreground: oklch(0.15 0.02 85);
+  --ring: oklch(0.72 0.18 85);
+  --sidebar-primary: oklch(0.72 0.18 85);
+  --sidebar-primary-foreground: oklch(0.15 0.02 85);
+  --sidebar-ring: oklch(0.72 0.18 85);
+  --chart-1: oklch(0.72 0.18 85);
 }
 body.role-admin.dark {
-  --primary: oklch(0.62 0.22 15);
-  --primary-foreground: oklch(0.12 0.02 15);
-  --ring: oklch(0.62 0.22 15);
-  --sidebar-primary: oklch(0.62 0.20 15);
-  --sidebar-ring: oklch(0.62 0.22 15);
-  --chart-1: oklch(0.62 0.22 15);
+  --primary: oklch(0.78 0.18 85);
+  --primary-foreground: oklch(0.15 0.02 85);
+  --ring: oklch(0.78 0.18 85);
+  --sidebar-primary: oklch(0.78 0.18 85);
+  --sidebar-ring: oklch(0.78 0.18 85);
+  --chart-1: oklch(0.78 0.18 85);
 }
 
 /* Manager — bleu */

@@ -16,6 +16,7 @@ import {
   Home,
   Menu,
   X,
+  FolderOpen,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import {
@@ -45,6 +46,7 @@ const secondaryNavItems: NavItem[] = [
   { icon: Gavel, label: "Conflits miniers", href: "/conflits" },
   { icon: History, label: "Jurisprudence", href: "/jurisprudence" },
   { icon: Scale, label: "Journal Officiel", href: "/journal-officiel" },
+  { icon: FolderOpen, label: "Documents", href: "/documents" },
 ]
 
 export function MobileNav() {

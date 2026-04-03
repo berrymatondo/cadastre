@@ -10,6 +10,7 @@ export interface SearchResult {
   date?: string
   relevance: number
   meta?: string
+  href: string
 }
 
 function score(text: string, q: string): number {
@@ -61,6 +62,7 @@ export async function GET(req: NextRequest) {
         excerpt: preview.slice(0, 200) + (preview.length > 200 ? "…" : ""),
         reference: `Code minier — Chapitre ${art.chapitre?.numero ?? ""}${art.section ? `, Section ${art.section.numero}` : ""}`,
         relevance: s,
+        href: `/code-minier?article=${art.id}`,
       })
     }
   }
@@ -87,6 +89,7 @@ export async function GET(req: NextRequest) {
         excerpt: preview.slice(0, 200) + (preview.length > 200 ? "…" : ""),
         reference: `Règlement minier — Titre ${art.titre_rel?.numero ?? ""}, Chapitre ${art.chapitre?.numero ?? ""}`,
         relevance: s,
+        href: `/reglement-minier?article=${art.id}`,
       })
     }
   }
@@ -107,6 +110,7 @@ export async function GET(req: NextRequest) {
         date: c.date.toLocaleDateString("fr-FR"),
         relevance: s,
         meta: c.juridiction,
+        href: `/jurisprudence?id=${c.id}`,
       })
     }
   }
@@ -127,6 +131,7 @@ export async function GET(req: NextRequest) {
         date: c.dateOuverture.toLocaleDateString("fr-FR"),
         relevance: s,
         meta: c.statut,
+        href: `/conflits?id=${c.id}`,
       })
     }
   }

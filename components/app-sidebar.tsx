@@ -17,6 +17,7 @@ import {
   ChevronRight,
   Home,
   Users,
+  FolderOpen,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -25,6 +26,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { usePathname } from "next/navigation";
 import { useRole } from "@/lib/use-role";
 import logo from "@/public/cami.png";
 
@@ -52,6 +54,7 @@ const secondaryNavItems: NavItem[] = [
   { icon: Gavel, label: "Conflits miniers", href: "/conflits" },
   { icon: History, label: "Jurisprudence", href: "/jurisprudence" },
   { icon: Scale, label: "Journal Officiel", href: "/journal-officiel" },
+  { icon: FolderOpen, label: "Documents", href: "/documents" },
 ];
 
 export function AppSidebar() {
@@ -179,11 +182,17 @@ export function AppSidebar() {
 }
 
 function NavLink({ item, collapsed }: { item: NavItem; collapsed: boolean }) {
+  const pathname = usePathname();
+  const isActive = pathname === item.href || (item.href !== "/" && pathname.startsWith(item.href));
+
   const content = (
     <Link
       href={item.href}
       className={cn(
-        "flex items-center gap-3 px-3 py-2 rounded-lg text-sidebar-foreground/70 hover:text-sidebar-foreground hover:bg-sidebar-accent transition-colors group",
+        "flex items-center gap-3 px-3 py-2 rounded-lg transition-colors group",
+        isActive
+          ? "bg-primary text-primary-foreground"
+          : "text-sidebar-foreground/70 hover:text-sidebar-foreground hover:bg-sidebar-accent",
         collapsed && "justify-center",
       )}
     >
@@ -192,7 +201,10 @@ function NavLink({ item, collapsed }: { item: NavItem; collapsed: boolean }) {
         <>
           <span className="text-sm flex-1">{item.label}</span>
           {item.badge && (
-            <span className="px-1.5 py-0.5 text-[10px] font-medium rounded bg-primary text-primary-foreground">
+            <span className={cn(
+              "px-1.5 py-0.5 text-[10px] font-medium rounded",
+              isActive ? "bg-primary-foreground/20 text-primary-foreground" : "bg-primary text-primary-foreground"
+            )}>
               {item.badge}
             </span>
           )}

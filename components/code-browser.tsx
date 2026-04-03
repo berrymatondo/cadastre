@@ -921,12 +921,12 @@ function TableOfContents({
       <AccordionItem
         key={ch.id}
         value={`ch-${ch.id}`}
-        className="border border-border/50 rounded-md overflow-hidden"
+        className="border border-indigo-500/30 rounded-md overflow-hidden"
       >
-        <AccordionTrigger className="hover:no-underline px-3 py-2.5 bg-muted/40 hover:bg-muted/70 [&>svg]:shrink-0 [&>svg]:ml-1">
+        <AccordionTrigger className="hover:no-underline px-3 py-2.5 bg-indigo-500/8 hover:bg-indigo-500/15 [&>svg]:shrink-0 [&>svg]:ml-1">
           <div className="flex items-start gap-2 w-full text-left group/ch">
-            <span className="text-[11px] font-bold text-primary/80 shrink-0 mt-0.5 uppercase">Chap.&nbsp;{ch.numero}</span>
-            <span className="flex-1 text-[11px] font-semibold uppercase tracking-wide leading-tight line-clamp-2">{ch.titre}</span>
+            <span className="text-[11px] font-bold text-indigo-600 dark:text-indigo-400 shrink-0 mt-0.5 uppercase">Chap.&nbsp;{ch.numero}</span>
+            <span className="flex-1 text-[11px] font-semibold uppercase tracking-wide leading-tight line-clamp-2 text-indigo-900 dark:text-indigo-200">{ch.titre}</span>
             <div className="flex items-center gap-0.5 shrink-0 ml-1">
               <Badge variant="secondary" className="text-[10px] px-1.5 py-0 h-4">{artCount(ch.id)}</Badge>
               <button onClick={(e) => { e.stopPropagation(); callbacks.onPdfChapitre(ch) }} className="p-1 rounded hover:bg-emerald-500/10 hover:text-emerald-600 opacity-0 group-hover/ch:opacity-100 transition-opacity" title="Télécharger en PDF">
@@ -947,11 +947,11 @@ function TableOfContents({
             {sectionsOf(ch.id).map((sec) => {
               const secArts = articlesOf(sec.id)
               return (
-                <AccordionItem key={sec.id} value={`sec-${sec.id}`} className="border-0 border-t border-border/30">
-                  <AccordionTrigger className="hover:no-underline px-3 py-2 hover:bg-muted/40 [&>svg]:shrink-0 [&>svg]:ml-1">
+                <AccordionItem key={sec.id} value={`sec-${sec.id}`} className="border-0 border-t border-emerald-500/20">
+                  <AccordionTrigger className="hover:no-underline px-3 py-2 hover:bg-emerald-500/8 [&>svg]:shrink-0 [&>svg]:ml-1">
                     <div className="flex items-start gap-2 w-full text-left group/sec">
-                      <span className="text-[10px] text-muted-foreground shrink-0 mt-0.5">§&nbsp;{sec.numero}</span>
-                      <span className="flex-1 text-xs font-medium italic leading-tight line-clamp-2">{sec.titre}</span>
+                      <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5">§&nbsp;{sec.numero}</span>
+                      <span className="flex-1 text-xs font-medium italic leading-tight line-clamp-2 text-emerald-800 dark:text-emerald-300">{sec.titre}</span>
                       <div className="flex items-center gap-0.5 shrink-0 ml-1">
                         <Badge variant="outline" className="text-[10px] px-1 py-0 h-4">{secArts.length}</Badge>
                         <button onClick={(e) => { e.stopPropagation(); callbacks.onPdfSection(sec, ch) }} className="p-1 rounded hover:bg-emerald-500/10 hover:text-emerald-600 opacity-0 group-hover/sec:opacity-100 transition-opacity" title="Télécharger en PDF">
@@ -974,11 +974,11 @@ function TableOfContents({
                             onClick={() => { onSelectArticle(art); onClose?.() }}
                             className={cn(
                               "flex-1 text-left text-xs px-2 py-1.5 rounded transition-colors",
-                              "hover:bg-primary/10 hover:text-primary",
-                              selectedArticle?.id === art.id ? "bg-primary/15 text-primary font-medium" : "text-foreground/80"
+                              "hover:bg-sky-500/10 hover:text-sky-700 dark:hover:text-sky-300",
+                              selectedArticle?.id === art.id ? "bg-sky-500/15 text-sky-700 dark:text-sky-300 font-medium" : "text-foreground/80"
                             )}
                           >
-                            <span className="font-mono text-[10px] text-muted-foreground mr-1">Art.&nbsp;{art.numero}</span>
+                            <span className="font-mono text-[10px] text-sky-600 dark:text-sky-400 font-semibold mr-1">Art.&nbsp;{art.numero}</span>
                             {art.titre}
                           </button>
                           {(pCanEdit || pCanDelete) && (
@@ -1011,11 +1011,11 @@ function TableOfContents({
       {/* Titres avec leurs chapitres */}
       <Accordion type="multiple" className="w-full space-y-1">
         {titres.map((t) => (
-          <AccordionItem key={t.id} value={`t-${t.id}`} className="border border-primary/30 rounded-md overflow-hidden">
-            <AccordionTrigger className="hover:no-underline px-3 py-2.5 bg-primary/5 hover:bg-primary/10 [&>svg]:shrink-0 [&>svg]:ml-1">
+          <AccordionItem key={t.id} value={`t-${t.id}`} className="border border-cyan-500/40 rounded-md overflow-hidden">
+            <AccordionTrigger className="hover:no-underline px-3 py-2.5 bg-cyan-500/10 hover:bg-cyan-500/20 [&>svg]:shrink-0 [&>svg]:ml-1">
               <div className="flex items-start gap-2 w-full text-left group/ti">
-                <span className="text-[11px] font-bold text-primary shrink-0 mt-0.5 uppercase">Titre&nbsp;{t.numero}</span>
-                <span className="flex-1 text-[11px] font-semibold uppercase tracking-wide leading-tight line-clamp-2">{t.titre}</span>
+                <span className="text-[11px] font-bold text-cyan-700 dark:text-cyan-400 shrink-0 mt-0.5 uppercase">Titre&nbsp;{t.numero}</span>
+                <span className="flex-1 text-[11px] font-semibold uppercase tracking-wide leading-tight line-clamp-2 text-cyan-900 dark:text-cyan-200">{t.titre}</span>
                 <div className="flex items-center gap-0.5 shrink-0 ml-1">
                   <Badge variant="secondary" className="text-[10px] px-1.5 py-0 h-4">{chapitresOf(t.id).length} chap.</Badge>
                   {pCanEdit && <button onClick={(e) => { e.stopPropagation(); callbacks.onEditTitre(t) }} className="p-1 rounded hover:bg-primary/10 hover:text-primary opacity-0 group-hover/ti:opacity-100 transition-opacity">

@@ -13,7 +13,8 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible"
-import { Search, FileText, BookOpen, Gavel, Clock, Filter, ChevronDown, AlertTriangle } from "lucide-react"
+import Link from "next/link"
+import { Search, FileText, BookOpen, Gavel, Clock, Filter, ChevronDown, AlertTriangle, ArrowRight } from "lucide-react"
 import type { SearchResult } from "@/app/api/search/route"
 
 // ─── Config par type ──────────────────────────────────────────────────────────
@@ -202,9 +203,10 @@ export function SearchModule() {
               {visibleResults.map((result) => {
                 const Icon = typeIcons[result.type]
                 return (
-                  <div
+                  <Link
                     key={result.id}
-                    className="p-3 sm:p-4 rounded-lg border border-border hover:border-primary/50 hover:bg-muted/50 transition-all cursor-pointer"
+                    href={result.href}
+                    className="group block p-3 sm:p-4 rounded-lg border border-border hover:border-primary/50 hover:bg-muted/50 transition-all"
                   >
                     <div className="flex items-start gap-3 sm:gap-4">
                       <div className="hidden sm:flex items-center justify-center w-10 h-10 rounded-lg bg-primary/10 shrink-0">
@@ -213,20 +215,22 @@ export function SearchModule() {
                       <div className="flex-1 min-w-0">
                         <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2">
                           <div className="min-w-0">
-                            <h3 className="font-medium text-foreground text-sm sm:text-base line-clamp-2">
+                            <h3 className="font-medium text-foreground text-sm sm:text-base line-clamp-2 group-hover:text-primary transition-colors">
                               {result.title}
                             </h3>
                             <p className="text-xs sm:text-sm text-muted-foreground mt-1 line-clamp-3">
                               {result.excerpt}
                             </p>
                           </div>
-                          <Badge variant="outline" className="text-xs shrink-0 self-start">
-                            {result.relevance}%
-                          </Badge>
+                          <div className="flex items-center gap-2 shrink-0 self-start">
+                            <Badge variant="outline" className="text-xs">
+                              {result.relevance}%
+                            </Badge>
+                            <ArrowRight className="w-4 h-4 text-muted-foreground group-hover:text-primary group-hover:translate-x-1 transition-all" />
+                          </div>
                         </div>
 
                         <div className="flex flex-wrap items-center gap-2 sm:gap-3 mt-2 sm:mt-3 text-xs text-muted-foreground">
-                          {/* Badge type */}
                           <Badge
                             variant="secondary"
                             className={`text-xs ${typeBadgeClass[result.type]}`}
@@ -234,7 +238,6 @@ export function SearchModule() {
                             {typeLabels[result.type]}
                           </Badge>
 
-                          {/* Statut conflit */}
                           {result.type === "conflit" && result.meta && (
                             <Badge
                               variant="outline"
@@ -244,7 +247,6 @@ export function SearchModule() {
                             </Badge>
                           )}
 
-                          {/* Juridiction jurisprudence */}
                           {result.type === "jurisprudence" && result.meta && (
                             <span className="italic truncate max-w-50">{result.meta}</span>
                           )}
@@ -260,7 +262,7 @@ export function SearchModule() {
                         </div>
                       </div>
                     </div>
-                  </div>
+                  </Link>
                 )
               })}
             </div>

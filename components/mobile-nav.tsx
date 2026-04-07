@@ -8,11 +8,10 @@ import {
   Scale,
   FileText,
   Search,
-  MessageSquare,
+  Sparkles,
   Gavel,
   History,
   Settings,
-  Sparkles,
   Home,
   Menu,
   X,
@@ -40,7 +39,6 @@ const mainNavItems: NavItem[] = [
   { icon: BookOpen, label: "Code minier", href: "/code-minier" },
   { icon: FileText, label: "Règlement minier", href: "/reglement-minier" },
   { icon: Search, label: "Recherche", href: "/recherche" },
-  { icon: MessageSquare, label: "Assistant IA", href: "/assistant", badge: "IA" },
 ]
 
 const secondaryNavItems: NavItem[] = [
@@ -87,13 +85,25 @@ export function MobileNav() {
                 >
                   <item.icon className="w-5 h-5 shrink-0" />
                   <span className="text-sm flex-1">{item.label}</span>
-                  {item.badge && (
-                    <span className="px-1.5 py-0.5 text-[10px] font-medium rounded bg-primary text-primary-foreground">
-                      {item.badge}
-                    </span>
-                  )}
                 </Link>
               ))}
+
+              {/* Assistant IA — entrée spéciale */}
+              <Link
+                href="/assistant"
+                onClick={() => setOpen(false)}
+                className="relative mt-2 flex items-center gap-3 px-3 py-2.5 rounded-xl overflow-hidden group bg-linear-to-r from-primary/20 via-primary/10 to-transparent border border-primary/30 hover:border-primary/60 transition-all"
+              >
+                <span className="pointer-events-none absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-700 bg-linear-to-r from-transparent via-primary/10 to-transparent" />
+                <div className="flex items-center justify-center w-7 h-7 rounded-lg bg-primary/20 shrink-0">
+                  <Sparkles className="w-4 h-4 text-primary" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-semibold text-sidebar-foreground leading-tight">Assistant IA</p>
+                  <p className="text-[10px] text-sidebar-foreground/50 leading-tight">Analyse juridique</p>
+                </div>
+                <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-primary/30 text-primary shrink-0">IA</span>
+              </Link>
             </div>
           </div>
 

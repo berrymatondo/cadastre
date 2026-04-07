@@ -9,7 +9,6 @@ import {
   Scale,
   FileText,
   Search,
-  MessageSquare,
   Gavel,
   History,
   Settings,
@@ -19,6 +18,7 @@ import {
   Users,
   FolderOpen,
   ListChecks,
+  Sparkles,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -43,12 +43,6 @@ const mainNavItems: NavItem[] = [
   { icon: BookOpen, label: "Code minier", href: "/code-minier" },
   { icon: FileText, label: "Règlement minier", href: "/reglement-minier" },
   { icon: Search, label: "Recherche", href: "/recherche" },
-  {
-    icon: MessageSquare,
-    label: "Assistant IA",
-    href: "/assistant",
-    badge: "IA",
-  },
 ];
 
 const secondaryNavItems: NavItem[] = [
@@ -104,6 +98,9 @@ export function AppSidebar() {
                 <NavLink key={item.href} item={item} collapsed={collapsed} />
               ))}
             </div>
+
+            {/* Assistant IA — entrée spéciale */}
+            <AssistantLink collapsed={collapsed} />
           </div>
 
           <div className="pt-4 border-t border-sidebar-border">
@@ -181,6 +178,67 @@ export function AppSidebar() {
       </aside>
     </TooltipProvider>
   );
+}
+
+function AssistantLink({ collapsed }: { collapsed: boolean }) {
+  const pathname = usePathname();
+  const isActive = pathname === "/assistant";
+
+  const content = (
+    <Link
+      href="/assistant"
+      className={cn(
+        "relative mt-3 flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all overflow-hidden group",
+        isActive
+          ? "bg-primary text-primary-foreground shadow-lg shadow-primary/30"
+          : "bg-gradient-to-r from-primary/20 via-primary/10 to-transparent border border-primary/30 text-sidebar-foreground hover:border-primary/60 hover:from-primary/30",
+        collapsed && "justify-center px-2",
+      )}
+    >
+      {/* Shimmer animé */}
+      {!isActive && (
+        <span className="pointer-events-none absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-700 bg-gradient-to-r from-transparent via-primary/10 to-transparent" />
+      )}
+      <div className={cn(
+        "relative flex items-center justify-center w-6 h-6 rounded-lg shrink-0",
+        isActive ? "bg-primary-foreground/20" : "bg-primary/20",
+      )}>
+        <Sparkles className="w-3.5 h-3.5" />
+      </div>
+      {!collapsed && (
+        <div className="flex-1 min-w-0">
+          <p className="text-xs font-semibold leading-tight">Assistant IA</p>
+          <p className={cn("text-[10px] leading-tight", isActive ? "text-primary-foreground/70" : "text-sidebar-foreground/50")}>
+            Analyse juridique
+          </p>
+        </div>
+      )}
+      {!collapsed && (
+        <span className={cn(
+          "text-[9px] font-bold px-1.5 py-0.5 rounded-full shrink-0",
+          isActive
+            ? "bg-primary-foreground/20 text-primary-foreground"
+            : "bg-primary/30 text-primary",
+        )}>
+          IA
+        </span>
+      )}
+    </Link>
+  );
+
+  if (collapsed) {
+    return (
+      <Tooltip>
+        <TooltipTrigger asChild>{content}</TooltipTrigger>
+        <TooltipContent side="right" className="flex items-center gap-2">
+          Assistant IA
+          <span className="px-1.5 py-0.5 text-[10px] font-medium rounded bg-primary text-primary-foreground">IA</span>
+        </TooltipContent>
+      </Tooltip>
+    );
+  }
+
+  return content;
 }
 
 function NavLink({ item, collapsed }: { item: NavItem; collapsed: boolean }) {

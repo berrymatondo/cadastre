@@ -1,112 +1,92 @@
 "use client";
 
-import Image from "next/image";
-import { ArrowRight, ScanLine, Database, FileText } from "lucide-react";
+import { useState } from "react";
+import { ArrowRight, ChevronDown, ScanLine, Database, FileText } from "lucide-react";
 
 const steps = [
   {
     label: "Documents papier",
-    caption:
-      "Archives, registres et dossiers miniers physiques accumulés depuis des décennies",
+    caption: "Archives, registres et dossiers miniers physiques accumulés depuis des décennies",
     Icon: FileText,
-    img: "https://images.unsplash.com/photo-1568667256549-094345857637?auto=format&fit=crop&w=800&q=75",
-    alt: "Piles de documents et archives papier",
+    color: "text-amber-400",
+    bg: "bg-amber-400/10",
+    border: "border-amber-400/20",
   },
   {
     label: "Numérisation",
-    caption:
-      "Scanning, indexation et structuration des textes juridiques et cartographiques",
+    caption: "Scanning, indexation et structuration des textes juridiques et cartographiques",
     Icon: ScanLine,
-    img: "https://images.unsplash.com/photo-1586281380349-632531db7ed4?auto=format&fit=crop&w=800&q=75",
-    alt: "Processus de numérisation de documents",
+    color: "text-blue-400",
+    bg: "bg-blue-400/10",
+    border: "border-blue-400/20",
   },
   {
     label: "Plateforme digitale",
-    caption:
-      "Recherche intelligente, assistant IA et accès instantané depuis n'importe où",
+    caption: "Recherche intelligente, assistant IA et accès instantané depuis n'importe où",
     Icon: Database,
-    img: "https://images.unsplash.com/photo-1523848309072-c199db53f137?q=80&w=2340&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-    alt: "Site minier au Katanga, RDC",
+    color: "text-emerald-400",
+    bg: "bg-emerald-400/10",
+    border: "border-emerald-400/20",
   },
 ];
 
 export function DigitalTransitionBanner() {
+  const [open, setOpen] = useState(false);
+
   return (
-    <div className="rounded-xl overflow-hidden border border-border bg-card">
-      {/* Header */}
-      <div className="px-4 sm:px-6 py-3 sm:py-4 border-b border-border">
-        <h2 className="text-sm sm:text-base font-semibold text-foreground">
-          De l'archive papier à la plateforme digitale
-        </h2>
-        <p className="text-xs text-muted-foreground mt-0.5">
-          La digitalisation du cadastre minier en trois étapes clés
-        </p>
-      </div>
+    <div className="rounded-xl border border-border bg-card">
+      <button
+        onClick={() => setOpen(o => !o)}
+        className="w-full flex items-center justify-between px-4 sm:px-6 py-3 text-left hover:bg-muted/30 transition-colors rounded-xl"
+      >
+        <div>
+          <h2 className="text-sm font-semibold text-foreground">
+            De l&apos;archive papier à la plateforme digitale
+          </h2>
+          <p className="text-xs text-muted-foreground mt-0.5 hidden sm:block">
+            La digitalisation du cadastre minier en trois étapes clés
+          </p>
+        </div>
+        <ChevronDown className={`w-4 h-4 text-muted-foreground shrink-0 transition-transform duration-200 ${open ? "rotate-180" : ""}`} />
+      </button>
 
-      {/* Steps */}
-      <div className="flex flex-col sm:flex-row sm:items-stretch">
-        {steps.map((step, idx) => (
-          <div key={step.label} className="mx-1 flex sm:flex-col flex-1">
-            {/* Card */}
-            <div className="flex sm:flex-col flex-row flex-1 group">
-              {/* Image */}
-              <div className="relative w-28 sm:w-full h-28 sm:h-48 shrink-0 overflow-hidden">
-                <Image
-                  src={step.img}
-                  alt={step.alt}
-                  fill
-                  className="rounded-lg object-cover transition-transform duration-500 group-hover:scale-105"
-                  sizes="(max-width: 640px) 112px, 33vw"
-                />
-                <div className="absolute inset-0 bg-linear-to-t from-black/60 via-black/20 to-transparent" />
-                {/* Step badge */}
-                <div className="absolute top-2 left-2 w-6 h-6 rounded-full bg-primary text-primary-foreground text-xs font-bold flex items-center justify-center shadow-md">
-                  {idx + 1}
+      {open && (
+        <div className="border-t border-border">
+          <div className="flex flex-col sm:flex-row divide-y sm:divide-y-0 divide-border">
+            {steps.map((step, idx) => (
+              <div key={step.label} className="flex sm:flex-col flex-1 items-center sm:items-start gap-3 px-4 sm:px-5 py-4 relative">
+                <div className="flex items-center gap-2 shrink-0">
+                  <div className={`w-10 h-10 rounded-xl ${step.bg} border ${step.border} flex items-center justify-center`}>
+                    <step.Icon className={`w-5 h-5 ${step.color}`} />
+                  </div>
+                  <span className="text-xs font-bold text-muted-foreground sm:hidden">
+                    {String(idx + 1).padStart(2, "0")}
+                  </span>
                 </div>
-                {/* Icon pill (desktop only, bottom of image) */}
-                <div className="hidden sm:flex absolute bottom-3 left-3">
-                  <div className="flex items-center gap-1.5 bg-black/40 backdrop-blur-sm border border-white/20 rounded-full px-2.5 py-1">
-                    <step.Icon className="w-3.5 h-3.5 text-white" />
-                    <span className="text-xs text-white font-medium">
-                      {step.label}
+
+                <div className="flex-1">
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="hidden sm:inline text-[11px] font-bold text-muted-foreground/60 tabular-nums">
+                      {String(idx + 1).padStart(2, "0")}
                     </span>
+                    <p className="text-sm font-semibold text-foreground">{step.label}</p>
                   </div>
+                  <p className="text-xs text-muted-foreground leading-relaxed">{step.caption}</p>
                 </div>
-              </div>
 
-              {/* Text */}
-              <div className="flex-1 px-3 sm:px-4 py-3 flex flex-col justify-center gap-1">
-                {/* Mobile: title with icon */}
-                <div className="flex sm:hidden items-center gap-2">
-                  <div className="w-6 h-6 rounded-md bg-primary/10 flex items-center justify-center shrink-0">
-                    <step.Icon className="w-3.5 h-3.5 text-primary" />
+                {idx < steps.length - 1 && (
+                  <div className="hidden sm:flex items-center justify-center absolute right-0 top-0 h-full w-px">
+                    <div className="h-full w-px bg-border" />
+                    <div className="absolute bg-card rounded-full p-0.5 border border-border">
+                      <ArrowRight className="w-3 h-3 text-muted-foreground/50" />
+                    </div>
                   </div>
-                  <p className="font-semibold text-sm text-foreground">
-                    {step.label}
-                  </p>
-                </div>
-                <p className="text-xs text-muted-foreground leading-relaxed line-clamp-3 sm:line-clamp-none">
-                  {step.caption}
-                </p>
+                )}
               </div>
-            </div>
-
-            {/* Separator + arrow between steps */}
-            {idx < steps.length - 1 && (
-              <>
-                {/* Mobile: horizontal separator */}
-                <div className="sm:hidden border-b border-border mx-3" />
-                {/* Desktop: vertical divider + arrow */}
-                <div className="hidden sm:flex flex-col items-center justify-center w-px self-stretch bg-border relative">
-                  <div className="absolute bg-card border border-border rounded-full p-1 shadow-sm">
-                    <ArrowRight className="w-3 h-3 text-primary" />
-                  </div>
-                </div>
-              </>
-            )}
+            ))}
           </div>
-        ))}
-      </div>
+        </div>
+      )}
     </div>
   );
 }

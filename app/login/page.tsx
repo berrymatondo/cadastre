@@ -1,49 +1,66 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { useRouter } from "next/navigation"
-import { signIn } from "@/lib/auth-client"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Button } from "@/components/ui/button"
-import { Label } from "@/components/ui/label"
-import { Sparkles, AlertCircle } from "lucide-react"
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { signIn } from "@/lib/auth-client";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
+import { Sparkles, AlertCircle } from "lucide-react";
+import Image from "next/image";
+import logo from "@/public/cami.png";
 
 export default function LoginPage() {
-  const router = useRouter()
-  const [email,    setEmail]    = useState("")
-  const [password, setPassword] = useState("")
-  const [error,    setError]    = useState("")
-  const [loading,  setLoading]  = useState(false)
+  const router = useRouter();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
   async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault()
-    setError("")
-    setLoading(true)
+    e.preventDefault();
+    setError("");
+    setLoading(true);
 
-    const result = await signIn.email({ email, password })
+    const result = await signIn.email({ email, password });
 
     if (result.error) {
-      setError("Email ou mot de passe incorrect.")
-      setLoading(false)
-      return
+      setError("Email ou mot de passe incorrect.");
+      setLoading(false);
+      return;
     }
 
-    router.push("/")
-    router.refresh()
+    router.push("/");
+    router.refresh();
   }
 
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
       <div className="w-full max-w-sm space-y-6">
-
         {/* Logo + titre */}
         <div className="flex flex-col items-center gap-3 text-center">
           <div className="flex items-center justify-center w-12 h-12 rounded-xl bg-primary shadow-lg">
-            <Sparkles className="w-6 h-6 text-primary-foreground" />
+            {/*             <Sparkles className="w-6 h-6 text-primary-foreground" />
+             */}{" "}
+            <Image
+              src={logo}
+              alt="CAMI"
+              width={60}
+              height={60}
+              className="bg-amber-50 z-20 rounded-lg shrink-0 object-cover"
+            />
           </div>
           <div>
-            <h1 className="text-2xl font-bold text-foreground tracking-tight">Cadastre Minier</h1>
+            <h1 className="text-2xl font-bold text-foreground tracking-tight">
+              Cadastre Minier
+            </h1>
             <p className="text-sm text-muted-foreground mt-1">
               Plateforme de digitalisation du cadastre minier
             </p>
@@ -54,7 +71,9 @@ export default function LoginPage() {
         <Card className="bg-card border-border shadow-sm">
           <CardHeader className="pb-4">
             <CardTitle className="text-lg">Connexion</CardTitle>
-            <CardDescription>Entrez vos identifiants pour accéder à la plateforme</CardDescription>
+            <CardDescription>
+              Entrez vos identifiants pour accéder à la plateforme
+            </CardDescription>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
@@ -104,5 +123,5 @@ export default function LoginPage() {
         </p>
       </div>
     </div>
-  )
+  );
 }

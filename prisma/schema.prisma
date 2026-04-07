@@ -17,6 +17,8 @@ model User {
   emailVerified Boolean   @default(false)
   image         String?
   role          String    @default("agent")
+  statut        String    @default("actif")
+  commentaire   String?
   banned        Boolean?  @default(false)
   banReason     String?
   banExpires    DateTime?
